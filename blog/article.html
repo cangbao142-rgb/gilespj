@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文章详情 - 交易笔记</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="logo">交易<span>笔记</span></a>
+      <button class="menu-toggle">☰</button>
+      <ul class="nav-links">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="daily.html">每日盘解</a></li>
+        <li><a href="about.html">关于我</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- 主内容 -->
+  <main class="main-content">
+    <div class="container">
+      <div id="articleContent">
+        <div class="loading"><div class="spinner"></div><p>加载中...</p></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <p>© 2026 交易笔记 - 记录每一笔交易</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/articles.js"></script>
+  <script src="js/utils.js"></script>
+  <script>
+    async function loadArticle() {
+      const id = Utils.getUrlParam('id');
+      if (!id) {
+        document.getElementById('articleContent').innerHTML = '<div class="empty-state"><p>文章不存在</p></div>';
+        return;
+      }
+
+      try {
+        const post = await Articles.getById(id);
+        const categoryMap = { article: '文章', daily: '盘解', operation: '操作记录' };
+
+        document.getElementById('articleContent').innerHTML = `
+          <article class="article-detail">
+            <h1>${post.title}</h1>
+            <div class="meta">
+              <span>${categoryMap[post.category] || post.category}</span>
+              <span> · </span>
+              <span>${Articles.formatDate(post.created_at)}</span>
+            </div>
+            ${post.cover_url ? `<img src="${post.cover_url}" style="width:100%;border-radius:8px;margin-bottom:24px;" alt="${post.title}">` : ''}
+            <div class="content">${post.content}</div>
+          </article>
+          <div style="text-align:center;margin-top:30px;">
+            <a href="javascript:history.back()" class="btn btn-outline">← 返回</a>
+          </div>
+        `;
+
+        document.title = post.title + ' - 交易笔记';
+      } catch (err) {
+        document.getElementById('articleContent').innerHTML = '<div class="empty-state"><p>文章加载失败</p></div>';
+        console.error(err);
+      }
+    }
+
+    Utils.initNav();
+    loadArticle();
+  </script>
+</body>
+</html>
