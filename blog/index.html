@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>交易笔记 - 个人博客</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="logo">交易<span>笔记</span></a>
+      <button class="menu-toggle">☰</button>
+      <ul class="nav-links">
+        <li><a href="index.html" class="active">首页</a></li>
+        <li><a href="daily.html">每日盘解</a></li>
+        <li><a href="about.html">关于我</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- 主内容 -->
+  <main class="main-content">
+    <div class="container">
+      <div class="page-header">
+        <h1>最新文章</h1>
+        <p>分享交易心得、市场分析和操作记录</p>
+      </div>
+
+      <!-- 分类筛选 -->
+      <div class="category-tabs">
+        <span class="tab active" data-category="">全部</span>
+        <span class="tab" data-category="article">文章</span>
+        <span class="tab" data-category="daily">盘解</span>
+        <span class="tab" data-category="operation">操作记录</span>
+      </div>
+
+      <!-- 文章列表 -->
+      <div class="post-grid" id="postList">
+        <div class="loading"><div class="spinner"></div><p>加载中...</p></div>
+      </div>
+
+      <!-- 分页 -->
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <p>© 2026 交易笔记 - 记录每一笔交易</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/articles.js"></script>
+  <script src="js/utils.js"></script>
+  <script>
+    let currentPage = 1;
+    let currentCategory = '';
+
+    // 加载文章列表
+    async function loadPosts(page = 1) {
+      const container = document.getElementById('postList');
+      container.innerHTML = '<div class="loading"><div class="spinner"></div><p>加载中...</p></div>';
+
+      try {
+        const { data, total } = await Articles.getList({
+          category: currentCategory || null,
+          page,
+          pageSize: 9
+        });
+
+        if (!data || data.length === 0) {
+          container.innerHTML = '<div class="empty-state"><div class="icon">📝</div><p>还没有发布任何内容</p></div>';
+          document.getElementById('pagination').innerHTML = '';
+          return;
+        }
+
+        container.innerHTML = data.map(post => `
+          <a href="article.html?id=${post.id}" class="card" style="text-decoration:none;color:inherit;">
+            ${post.cover_url ? `<img src="${post.cover_url}" class="card-img" alt="${post.title}">` : '<div class="card-img" style="background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;color:#fff;font-size:40px;">📊</div>'}
+            <div class="card-body">
+              <h3>${post.title}</h3>
+              <p>${Articles.getExcerpt(post.content)}</p>
+              <div class="card-meta">
+                <span class="tag">${getCategoryLabel(post.category)}</span>
+                <span>${Articles.formatDate(post.created_at)}</span>
+              </div>
+            </div>
+          </a>
+        `).join('');
+
+        currentPage = page;
+        Utils.renderPagination(document.getElementById('pagination'), {
+          total,
+          page,
+          pageSize: 9,
+          onChange: loadPosts
+        });
+      } catch (err) {
+        container.innerHTML = '<div class="empty-state"><p>加载失败，请刷新重试</p></div>';
+        console.error(err);
+      }
+    }
+
+    function getCategoryLabel(category) {
+      const map = { article: '文章', daily: '盘解', operation: '操作记录' };
+      return map[category] || category;
+    }
+
+    // 分类切换
+    document.querySelectorAll('.category-tabs .tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.category-tabs .tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentCategory = tab.dataset.category;
+        loadPosts(1);
+      });
+    });
+
+    // 初始化
+    Utils.initNav();
+    loadPosts();
+  </script>
+</body>
+</html>
