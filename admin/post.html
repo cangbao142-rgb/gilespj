@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>发布内容 - 交易笔记</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <!-- 侧边栏 -->
+    <aside class="admin-sidebar">
+      <div class="brand">交易笔记</div>
+      <a href="dashboard.html" class="nav-item">📊 仪表盘</a>
+      <a href="post.html" class="nav-item active">✏️ 发布文章</a>
+      <a href="post.html?category=daily" class="nav-item">📈 发布盘解</a>
+      <a href="post.html?category=operation" class="nav-item">📋 发布操作记录</a>
+      <a href="../index.html" class="nav-item" target="_blank">🌐 查看网站</a>
+      <a href="#" class="nav-item" id="logoutBtn">🚪 退出登录</a>
+    </aside>
+
+    <!-- 主内容 -->
+    <main class="admin-main">
+      <div class="admin-header">
+        <h2 id="pageTitle">发布文章</h2>
+        <a href="dashboard.html" class="btn btn-outline btn-sm">← 返回</a>
+      </div>
+
+      <div class="card" style="padding:30px;">
+        <form id="postForm">
+          <div class="form-group">
+            <label>标题</label>
+            <input type="text" id="title" placeholder="请输入标题" required>
+          </div>
+
+          <div class="form-group">
+            <label>分类</label>
+            <select id="category">
+              <option value="article">文章</option>
+              <option value="daily">盘解</option>
+              <option value="operation">操作记录</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>封面图片（可选）</label>
+            <div class="upload-area" id="coverUpload">
+              <div class="icon">🖼️</div>
+              <p>点击上传封面图片</p>
+              <input type="file" id="coverFile" accept="image/*" style="display:none;">
+            </div>
+            <div id="coverPreview" style="margin-top:10px;"></div>
+            <input type="hidden" id="coverUrl">
+          </div>
+
+          <div class="form-group">
+            <label>内容</label>
+            <textarea id="content" placeholder="请输入内容，支持 HTML 标签..." style="min-height:400px;"></textarea>
+          </div>
+
+          <div style="display:flex;gap:12px;">
+            <button type="submit" class="btn btn-primary" id="submitBtn">发布</button>
+            <a href="dashboard.html" class="btn btn-outline">取消</a>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@1"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/articles.js"></script>
+  <script src="../js/utils.js"></script>
+  <script>
+    let editId = null;
+
+    async function init() {
+      const ok = await Auth.requireAuth();
+      if (!ok) return;
+
+      // 初始化编辑器工具栏
+      Utils.createEditorToolbar(document.getElementById('content'));
+
+      // 检查是否是编辑模式
+      editId = Utils.getUrlParam('id');
+      const categoryParam = Utils.getUrlParam('category');
+
+      if (editId) {
+        document.getElementById('pageTitle').textContent = '编辑内容';
+        document.getElementById('submitBtn').textContent = '保存修改';
+        try {
+          const post = await Articles.getById(editId);
+          document.getElementById('title').value = post.title;
+          document.getElementById('category').value = post.category;
+          document.getElementById('content').value = post.content;
+          if (post.cover_url) {
+            document.getElementById('coverUrl').value = post.cover_url;
+            document.getElementById('coverPreview').innerHTML = `
+              <img src="${post.cover_url}" style="max-width:200px;border-radius:6px;">
+            `;
+          }
+        } catch (err) {
+          Utils.toast('加载失败', 'error');
+        }
+      } else if (categoryParam) {
+        document.getElementById('category').value = categoryParam;
+        updateTitle(categoryParam);
+      }
+
+      // 分类变化时更新标题
+      document.getElementById('category').addEventListener('change', (e) => {
+        updateTitle(e.target.value);
+      });
+    }
+
+    function updateTitle(category) {
+      const map = { article: '发布文章', daily: '发布盘解', operation: '发布操作记录' };
+      document.getElementById('pageTitle').textContent = map[category] || '发布内容';
+    }
+
+    // 封面图片上传
+    document.getElementById('coverUpload').addEventListener('click', () => {
+      document.getElementById('coverFile').click();
+    });
+
+    document.getElementById('coverFile').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try {
+        Utils.toast('上传中...', 'warning');
+        const url = await Articles.uploadImage(file);
+        document.getElementById('coverUrl').value = url;
+        document.getElementById('coverPreview').innerHTML = `
+          <img src="${url}" style="max-width:200px;border-radius:6px;">
+        `;
+        Utils.toast('封面上传成功');
+      } catch (err) {
+        Utils.toast('上传失败: ' + err.message, 'error');
+      }
+    });
+
+    // 表单提交
+    document.getElementById('postForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const title = document.getElementById('title').value.trim();
+      const category = document.getElementById('category').value;
+      const content = document.getElementById('content').value.trim();
+      const cover_url = document.getElementById('coverUrl').value || null;
+
+      if (!title || !content) {
+        Utils.toast('请填写标题和内容', 'warning');
+        return;
+      }
+
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = '保存中...';
+
+      try {
+        if (editId) {
+          await Articles.update(editId, { title, content, cover_url, category });
+          Utils.toast('修改成功');
+        } else {
+          await Articles.create({ title, content, cover_url, category });
+          Utils.toast('发布成功');
+        }
+        setTimeout(() => window.location.href = 'dashboard.html', 1000);
+      } catch (err) {
+        Utils.toast('保存失败: ' + err.message, 'error');
+        btn.disabled = false;
+        btn.textContent = editId ? '保存修改' : '发布';
+      }
+    });
+
+    // 退出登录
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await Auth.signOut();
+      window.location.href = 'login.html';
+    });
+
+    init();
+  </script>
+</body>
+</html>
