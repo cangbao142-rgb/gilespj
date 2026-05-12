@@ -304,8 +304,8 @@
 
   <script src="js/config.js"></script>
   <script>
-    // ===== Flask Backend API =====
-    const API = "http://localhost:5000";
+    // ===== API (Vercel Serverless Function) =====
+    const API = "/api/binance";
 
     let chart, eqChart, klineData = [];
     let drawTool = "none", drawPts = [], drawings = [];
@@ -328,7 +328,7 @@
       const intv = document.getElementById("sel-int").value;
 
       try {
-        const resp = await fetch(`${API}/api/klines/live?symbol=${sym}&interval=${intv}&limit=300`);
+        const resp = await fetch(`${API}?endpoint=klines&symbol=${sym}&interval=${intv}&limit=300`);
         const raw = await resp.json();
         if (raw.error) { console.error(raw.error); return; }
         klineData = raw.map(d => ({
@@ -345,7 +345,7 @@
     async function fetchTicker() {
       const sym = document.getElementById("sel-sym").value;
       try {
-        const resp = await fetch(`${API}/api/ticker?symbol=${sym}`);
+        const resp = await fetch(`${API}?endpoint=ticker&symbol=${sym}`);
         const d = await resp.json();
         if (d.error) return;
         document.getElementById("t-sym").textContent = sym.replace("USDT", "/USDT");
