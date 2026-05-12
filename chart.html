@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>实时看盘 - 交易笔记</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
+  <style>
+    body {
+      background: #08090d;
+      background-image:
+        radial-gradient(ellipse at 20% 50%, rgba(88,166,255,0.04) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(167,139,250,0.03) 0%, transparent 50%);
+      overflow: hidden; height: 100vh; display: flex; flex-direction: column;
+    }
+    .navbar {
+      background: rgba(10,12,18,0.7);
+      backdrop-filter: blur(24px) saturate(1.5);
+      -webkit-backdrop-filter: blur(24px) saturate(1.5);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    /* ===== 顶部行情信息 ===== */
+    .ticker-bar {
+      height: 44px; display: flex; align-items: center; gap: 16px; padding: 0 24px;
+      background: rgba(10,12,18,0.5);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .ticker-sym { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: 0.3px; }
+    .ticker-price { font-size: 15px; font-weight: 600; color: #e6edf3; }
+    .ticker-chg {
+      font-size: 12px; padding: 3px 10px; border-radius: 6px; font-weight: 600;
+      backdrop-filter: blur(8px);
+    }
+    .ticker-chg.up { color: #3fb950; background: rgba(63,185,80,0.1); border: 1px solid rgba(63,185,80,0.15); }
+    .ticker-chg.down { color: #f85149; background: rgba(248,81,73,0.1); border: 1px solid rgba(248,81,73,0.15); }
+    .ticker-extra { color: #6e7681; font-size: 12px; margin-left: auto; display: flex; gap: 20px; }
+    .ticker-extra span { color: #8b949e; font-weight: 500; }
+
+    /* ===== K线图区域 ===== */
+    .chart-area { flex: 1; position: relative; overflow: hidden; }
+    #kline-chart { width: 100%; height: 100%; }
+
+    /* ===== 回测浮层 ===== */
+    .bt-panel {
+      position: absolute; right: 12px; top: 12px; bottom: 12px; width: 360px; z-index: 30;
+      background: rgba(10,12,18,0.65);
+      backdrop-filter: blur(28px) saturate(1.5);
+      -webkit-backdrop-filter: blur(28px) saturate(1.5);
+      border: 1px solid rgba(255,255,255,0.07);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+      border-radius: 16px; overflow-y: auto; padding: 16px;
+      transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.35s;
+    }
+    .bt-panel.hide { transform: translateX(420px); opacity: 0; pointer-events: none; }
+    .bt-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .bt-head h3 { font-size: 14px; font-weight: 600; color: #e6edf3; letter-spacing: 0.3px; }
+    .bt-close {
+      cursor: pointer; color: #6e7681; font-size: 18px; width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center; border-radius: 8px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+      transition: all 0.2s;
+    }
+    .bt-close:hover { background: rgba(255,255,255,0.1); color: #e6edf3; border-color: rgba(255,255,255,0.12); }
+    .bt-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
+    .bt-m {
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(8px);
+      padding: 10px; border-radius: 10px; text-align: center;
+      border: 1px solid rgba(255,255,255,0.04);
+      transition: border-color 0.2s;
+    }
+    .bt-m:hover { border-color: rgba(255,255,255,0.08); }
+    .bt-m .lbl { display: block; font-size: 9px; color: #6e7681; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 500; }
+    .bt-m .val { font-size: 15px; font-weight: 700; color: #e6edf3; }
+    .bt-m .val.up { color: #3fb950; }
+    .bt-m .val.down { color: #f85149; }
+    #equity-chart { width: 100%; height: 150px; margin-bottom: 12px; border-radius: 10px; overflow: hidden; }
+    .bt-table { width: 100%; border-collapse: collapse; }
+    .bt-table th { padding: 6px 8px; text-align: left; color: #6e7681; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 1px solid rgba(255,255,255,0.05); font-weight: 500; }
+    .bt-table td { padding: 6px 8px; font-size: 11px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .c-green { color: #3fb950; } .c-red { color: #f85149; }
+
+    /* ===== 底部控制栏 ===== */
+    .ctrl-bar {
+      min-height: 54px; padding: 10px 24px;
+      background: rgba(10,12,18,0.6);
+      backdrop-filter: blur(24px) saturate(1.5);
+      -webkit-backdrop-filter: blur(24px) saturate(1.5);
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .ctrl-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+    .cg { display: flex; flex-direction: column; gap: 4px; }
+    .cg label { font-size: 10px; color: #6e7681; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+
+    .ctrl-bar select {
+      color: #e6edf3;
+      background: rgba(16,18,24,0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 7px 28px 7px 12px;
+      border-radius: 9px; font-size: 12px; outline: none; cursor: pointer;
+      transition: all 0.25s;
+      appearance: none;
+      color-scheme: dark;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236e7681'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+    }
+    .ctrl-bar select option {
+      background: rgba(16,18,24,0.98);
+      color: #e6edf3;
+      padding: 6px 10px;
+    }
+    .ctrl-bar select:hover {
+      border-color: rgba(255,255,255,0.15);
+      background-color: rgba(255,255,255,0.06);
+      box-shadow: 0 0 12px rgba(88,166,255,0.08);
+    }
+    .ctrl-bar select:focus {
+      border-color: rgba(88,166,255,0.5);
+      box-shadow: 0 0 0 2px rgba(88,166,255,0.12);
+    }
+
+    .ctrl-bar button {
+      padding: 7px 18px;
+      color: #e6edf3;
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 9px; cursor: pointer; font-size: 12px; font-weight: 500;
+      transition: all 0.25s;
+      position: relative; overflow: hidden;
+    }
+    .ctrl-bar button::before {
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 50%);
+      opacity: 0; transition: opacity 0.25s;
+    }
+    .ctrl-bar button:hover {
+      background: rgba(255,255,255,0.07);
+      border-color: rgba(255,255,255,0.15);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.2), 0 0 16px rgba(88,166,255,0.06);
+      transform: translateY(-1px);
+    }
+    .ctrl-bar button:hover::before { opacity: 1; }
+    .ctrl-bar button:active { transform: translateY(0); }
+
+    .ctrl-bar button.pri {
+      background: rgba(35,134,54,0.6);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(63,185,80,0.25);
+      color: #fff;
+      box-shadow: 0 0 16px rgba(63,185,80,0.1);
+    }
+    .ctrl-bar button.pri::before {
+      background: linear-gradient(135deg, rgba(63,185,80,0.15) 0%, transparent 50%);
+    }
+    .ctrl-bar button.pri:hover {
+      background: rgba(46,160,67,0.7);
+      border-color: rgba(63,185,80,0.4);
+      box-shadow: 0 4px 20px rgba(63,185,80,0.15), 0 0 24px rgba(63,185,80,0.08);
+    }
+    .ctrl-bar button:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; }
+
+    .divider { width: 1px; height: 24px; background: rgba(255,255,255,0.06); margin: 0 4px; }
+
+    .draw-tools { display: flex; gap: 3px; align-items: center; }
+    .draw-tools .tb {
+      width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
+      border-radius: 9px; cursor: pointer; color: #6e7681;
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.05);
+      transition: all 0.25s;
+    }
+    .draw-tools .tb:hover {
+      background: rgba(255,255,255,0.07);
+      color: #e6edf3;
+      border-color: rgba(255,255,255,0.1);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+      transform: translateY(-1px);
+    }
+    .draw-tools .tb.on {
+      background: rgba(88,166,255,0.12);
+      color: #58a6ff;
+      border-color: rgba(88,166,255,0.25);
+      box-shadow: 0 0 12px rgba(88,166,255,0.1);
+    }
+    .draw-tools .tb:active { transform: translateY(0); }
+    .draw-tools .tb svg { width: 16px; height: 16px; }
+  </style>
+</head>
+<body>
+  <!-- 导航栏 -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="index.html" class="logo">交易<span>笔记</span></a>
+      <button class="menu-toggle">☰</button>
+      <ul class="nav-links">
+        <li><a href="index.html">首页</a></li>
+        <li><a href="daily.html">每日盘解</a></li>
+        <li><a href="chart.html" class="active">实时看盘</a></li>
+        <li><a href="about.html">关于我</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- 行情信息栏 -->
+  <div class="ticker-bar">
+    <span class="ticker-sym" id="t-sym">BTC/USDT</span>
+    <span class="ticker-price" id="t-price">--</span>
+    <span class="ticker-chg" id="t-chg">--</span>
+    <div class="ticker-extra">
+      <div>24h高 <span id="t-high">--</span></div>
+      <div>24h低 <span id="t-low">--</span></div>
+      <div>24h量 <span id="t-vol">--</span></div>
+    </div>
+  </div>
+
+  <!-- K线图 -->
+  <div class="chart-area">
+    <div id="kline-chart"></div>
+
+    <!-- 回测浮层 -->
+    <div id="bt-panel" class="bt-panel hide">
+      <div class="bt-head">
+        <h3>回测结果</h3>
+        <span class="bt-close" onclick="document.getElementById('bt-panel').classList.add('hide')">&times;</span>
+      </div>
+      <div class="bt-metrics">
+        <div class="bt-m"><span class="lbl">初始资金</span><span class="val" id="b-init">$10,000</span></div>
+        <div class="bt-m"><span class="lbl">最终资金</span><span class="val" id="b-final">-</span></div>
+        <div class="bt-m"><span class="lbl">总收益率</span><span class="val" id="b-ret">-</span></div>
+        <div class="bt-m"><span class="lbl">年化收益</span><span class="val" id="b-ann">-</span></div>
+        <div class="bt-m"><span class="lbl">最大回撤</span><span class="val" id="b-dd">-</span></div>
+        <div class="bt-m"><span class="lbl">胜率</span><span class="val" id="b-wr">-</span></div>
+        <div class="bt-m"><span class="lbl">交易次数</span><span class="val" id="b-tc">-</span></div>
+        <div class="bt-m"><span class="lbl">夏普比率</span><span class="val" id="b-sp">-</span></div>
+      </div>
+      <div id="equity-chart"></div>
+      <table class="bt-table">
+        <thead><tr><th>时间</th><th>操作</th><th>价格</th><th>盈亏</th></tr></thead>
+        <tbody id="bt-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 底部控制栏 -->
+  <div class="ctrl-bar">
+    <div class="ctrl-row">
+      <div class="cg">
+        <label>币种</label>
+        <select id="sel-sym" onchange="onSelectChange()">
+          <option value="BTCUSDT">BTC/USDT</option>
+          <option value="ETHUSDT">ETH/USDT</option>
+          <option value="SOLUSDT">SOL/USDT</option>
+          <option value="BNBUSDT">BNB/USDT</option>
+          <option value="DOGEUSDT">DOGE/USDT</option>
+          <option value="XRPUSDT">XRP/USDT</option>
+          <option value="AVAXUSDT">AVAX/USDT</option>
+          <option value="LINKUSDT">LINK/USDT</option>
+        </select>
+      </div>
+      <div class="cg">
+        <label>周期</label>
+        <select id="sel-int" onchange="onSelectChange()">
+          <option value="1m">1分钟</option><option value="3m">3分钟</option><option value="5m">5分钟</option>
+          <option value="15m">15分钟</option><option value="30m">30分钟</option>
+          <option value="1h">1小时</option><option value="2h">2小时</option><option value="4h">4小时</option>
+          <option value="6h">6小时</option><option value="8h">8小时</option><option value="12h">12小时</option>
+          <option value="1d" selected>日线</option><option value="3d">3日线</option>
+          <option value="1w">周线</option><option value="1M">月线</option>
+        </select>
+      </div>
+      <div class="cg">
+        <label>策略</label>
+        <select id="sel-stg">
+          <option value="ma_cross">均线交叉</option>
+          <option value="rsi">RSI 超买超卖</option>
+          <option value="bollinger">布林带</option>
+        </select>
+      </div>
+      <button id="btn-bt" onclick="runBacktest()" class="pri">运行回测</button>
+
+      <div class="divider"></div>
+
+      <div class="draw-tools">
+        <div class="tb on" data-tool="none" title="选择"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg></div>
+        <div class="tb" data-tool="trendline" title="趋势线"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="20" x2="20" y2="4"/></svg></div>
+        <div class="tb" data-tool="hline" title="水平线"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/></svg></div>
+        <div class="tb" data-tool="fibonacci" title="斐波那契"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+        <div class="tb" data-tool="rect" title="矩形"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="1"/></svg></div>
+        <div class="tb" data-tool="clear" title="清除"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M5 6v14a2 2 0 002 2h10a2 2 0 002-2V6"/></svg></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script>
+    // ===== Flask Backend API =====
+    const API = "http://localhost:5000";
+
+    let chart, eqChart, klineData = [];
+    let drawTool = "none", drawPts = [], drawings = [];
+
+    // Init
+    document.addEventListener("DOMContentLoaded", () => {
+      chart = echarts.init(document.getElementById("kline-chart"));
+      setupTools();
+      fetchKlines();
+      fetchTicker();
+      chart.getZr().on("click", onChartClick);
+      window.addEventListener("resize", () => { chart && chart.resize(); eqChart && eqChart.resize(); });
+    });
+
+    function onSelectChange() { fetchKlines(); fetchTicker(); }
+
+    // ===== Fetch Data =====
+    async function fetchKlines() {
+      const sym = document.getElementById("sel-sym").value;
+      const intv = document.getElementById("sel-int").value;
+
+      try {
+        const resp = await fetch(`${API}/api/klines/live?symbol=${sym}&interval=${intv}&limit=300`);
+        const raw = await resp.json();
+        if (raw.error) { console.error(raw.error); return; }
+        klineData = raw.map(d => ({
+          time: d.open_time.split("T")[0],
+          open: d.open, high: d.high, low: d.low, close: d.close, volume: d.volume
+        }));
+        renderChart(klineData, []);
+        updateTicker(klineData);
+      } catch (e) {
+        console.error("Fetch failed:", e);
+      }
+    }
+
+    async function fetchTicker() {
+      const sym = document.getElementById("sel-sym").value;
+      try {
+        const resp = await fetch(`${API}/api/ticker?symbol=${sym}`);
+        const d = await resp.json();
+        if (d.error) return;
+        document.getElementById("t-sym").textContent = sym.replace("USDT", "/USDT");
+        document.getElementById("t-price").textContent = "$" + d.price.toLocaleString(undefined, { minimumFractionDigits: 2 });
+        document.getElementById("t-high").textContent = "$" + d.high.toLocaleString(undefined, { minimumFractionDigits: 2 });
+        document.getElementById("t-low").textContent = "$" + d.low.toLocaleString(undefined, { minimumFractionDigits: 2 });
+        document.getElementById("t-vol").textContent = (d.volume / 1e6).toFixed(1) + "M";
+        const el = document.getElementById("t-chg");
+        el.textContent = (d.change >= 0 ? "+" : "") + d.change.toFixed(2) + "%";
+        el.className = "ticker-chg " + (d.change >= 0 ? "up" : "down");
+      } catch (e) { console.error("Ticker fetch failed:", e); }
+    }
+
+    function updateTicker(data) {
+      const last = data[data.length - 1];
+      const prev = data[data.length - 2];
+      if (!last) return;
+      const sym = document.getElementById("sel-sym").value;
+      document.getElementById("t-sym").textContent = sym.replace("USDT", "/USDT");
+      document.getElementById("t-price").textContent = "$" + last.close.toLocaleString(undefined, { minimumFractionDigits: 2 });
+      const last24 = data.slice(-24);
+      document.getElementById("t-high").textContent = "$" + Math.max(...last24.map(d => d.high)).toLocaleString(undefined, { minimumFractionDigits: 2 });
+      document.getElementById("t-low").textContent = "$" + Math.min(...last24.map(d => d.low)).toLocaleString(undefined, { minimumFractionDigits: 2 });
+      document.getElementById("t-vol").textContent = (last24.reduce((s, d) => s + d.volume, 0) / 1e6).toFixed(1) + "M";
+      if (prev) {
+        const chg = ((last.close - prev.close) / prev.close * 100);
+        const el = document.getElementById("t-chg");
+        el.textContent = (chg >= 0 ? "+" : "") + chg.toFixed(2) + "%";
+        el.className = "ticker-chg " + (chg >= 0 ? "up" : "down");
+      }
+    }
+
+    // ===== Render Chart =====
+    function renderChart(data, trades) {
+      const dates = data.map(d => d.time);
+      const ohlc = data.map(d => [d.open, d.close, d.low, d.high]);
+      const vols = data.map(d => d.volume);
+
+      const buys = [], sells = [];
+      trades.forEach(t => {
+        const idx = dates.indexOf(t.time);
+        if (idx >= 0) {
+          if (t.type === "buy") buys.push({ coord: [idx, data[idx].low * 0.998], value: "B" });
+          else sells.push({ coord: [idx, data[idx].high * 1.002], value: "S" });
+        }
+      });
+
+      chart.setOption({
+        backgroundColor: "transparent", animation: false,
+        tooltip: { trigger: "axis", axisPointer: { type: "cross", lineStyle: { color: "rgba(255,255,255,0.1)" } }, backgroundColor: "rgba(13,17,23,0.9)", borderColor: "rgba(255,255,255,0.08)", textStyle: { color: "#e6edf3", fontSize: 12 } },
+        grid: [{ left: 60, right: 15, top: 20, bottom: "28%" }, { left: 60, right: 15, top: "78%", bottom: 30 }],
+        xAxis: [
+          { type: "category", data: dates, gridIndex: 0, axisLabel: { color: "#484f58", fontSize: 11 }, axisLine: { lineStyle: { color: "rgba(255,255,255,0.06)" } }, splitLine: { show: false } },
+          { type: "category", data: dates, gridIndex: 1, axisLabel: { show: false }, axisLine: { lineStyle: { color: "rgba(255,255,255,0.06)" } }, splitLine: { show: false } }
+        ],
+        yAxis: [
+          { scale: true, gridIndex: 0, axisLabel: { color: "#484f58", fontSize: 11 }, splitLine: { lineStyle: { color: "rgba(255,255,255,0.04)" } }, axisLine: { show: false } },
+          { scale: true, gridIndex: 1, axisLabel: { color: "#484f58", fontSize: 11 }, splitLine: { lineStyle: { color: "rgba(255,255,255,0.04)" } }, axisLine: { show: false } }
+        ],
+        dataZoom: [
+          { type: "inside", xAxisIndex: [0, 1], start: 60, end: 100 },
+          { type: "slider", xAxisIndex: [0, 1], start: 60, end: 100, height: 15, bottom: 8, borderColor: "transparent", backgroundColor: "rgba(255,255,255,0.03)", fillerColor: "rgba(88,166,255,0.1)", handleStyle: { color: "#58a6ff" }, textStyle: { color: "#484f58" } }
+        ],
+        series: [
+          { type: "candlestick", data: ohlc, xAxisIndex: 0, yAxisIndex: 0, itemStyle: { color: "#3fb950", color0: "#f85149", borderColor: "#3fb950", borderColor0: "#f85149" },
+            markPoint: { data: [
+              ...buys.map(p => ({ ...p, symbol: "triangle", symbolSize: 10, symbolRotate: 0, itemStyle: { color: "#3fb950" }, label: { show: true, formatter: "B", color: "#3fb950", fontSize: 9, position: "bottom" } })),
+              ...sells.map(p => ({ ...p, symbol: "triangle", symbolSize: 10, symbolRotate: 180, itemStyle: { color: "#f85149" }, label: { show: true, formatter: "S", color: "#f85149", fontSize: 9, position: "top" } }))
+            ] },
+            markLine: { data: [] }
+          },
+          { type: "bar", data: vols, xAxisIndex: 1, yAxisIndex: 1, itemStyle: { color: p => { const d = ohlc[p.dataIndex]; return d[1] >= d[0] ? "rgba(63,185,80,0.3)" : "rgba(248,81,73,0.3)"; } } }
+        ]
+      }, true);
+      redrawAll();
+    }
+
+    // ===== Drawing Tools =====
+    function setupTools() {
+      document.querySelectorAll(".draw-tools .tb").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const tool = btn.dataset.tool;
+          if (tool === "clear") { clearDraw(); return; }
+          document.querySelectorAll(".draw-tools .tb").forEach(b => b.classList.remove("on"));
+          btn.classList.add("on");
+          drawTool = tool; drawPts = [];
+        });
+      });
+    }
+
+    function onChartClick(e) {
+      if (drawTool === "none") return;
+      const pt = [e.offsetX, e.offsetY];
+      const dp = chart.convertFromPixel({ seriesIndex: 0 }, pt);
+      if (!dp) return;
+      drawPts.push({ pixel: pt, data: dp });
+
+      if (drawTool === "hline") { addHLine(dp[1]); drawPts = []; }
+      else if (drawTool === "trendline" && drawPts.length === 2) { addTrend(drawPts[0], drawPts[1]); drawPts = []; }
+      else if (drawTool === "fibonacci" && drawPts.length === 2) { addFib(drawPts[0], drawPts[1]); drawPts = []; }
+      else if (drawTool === "rect" && drawPts.length === 2) { addRect(drawPts[0], drawPts[1]); drawPts = []; }
+    }
+
+    function addHLine(price) {
+      const opt = chart.getOption();
+      if (!opt.series[0].markLine) opt.series[0].markLine = { data: [], silent: true, lineStyle: { color: "#58a6ff", width: 1, type: "dashed" } };
+      opt.series[0].markLine.data.push({ yAxis: price, label: { formatter: price.toFixed(2), position: "end", color: "#58a6ff", fontSize: 11 } });
+      chart.setOption(opt);
+      drawings.push({ type: "hline", price });
+    }
+
+    function addTrend(p1, p2) {
+      const opt = chart.getOption();
+      if (!opt.series[0].markLine) opt.series[0].markLine = { data: [], silent: true, lineStyle: { color: "#a78bfa", width: 1.5 } };
+      opt.series[0].markLine.data.push([{ coord: [p1.data[0], p1.data[1]], symbol: "circle", symbolSize: 4 }, { coord: [p2.data[0], p2.data[1]], symbol: "circle", symbolSize: 4 }]);
+      chart.setOption(opt);
+      drawings.push({ type: "trendline", p1: p1.data, p2: p2.data });
+    }
+
+    function addFib(p1, p2) {
+      const opt = chart.getOption();
+      const y1 = p1.data[1], y2 = p2.data[1], diff = y2 - y1;
+      const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
+      const colors = ["#3fb950", "#58a6ff", "#a78bfa", "#d2a8ff", "#f0883e", "#f85149", "#ff7b72"];
+      if (!opt.series[0].markLine) opt.series[0].markLine = { data: [], silent: true, lineStyle: { width: 1 } };
+      levels.forEach((l, i) => {
+        const p = y1 + diff * l;
+        opt.series[0].markLine.data.push({ yAxis: p, lineStyle: { color: colors[i], type: "dashed" }, label: { formatter: `${(l*100).toFixed(1)}% ${p.toFixed(2)}`, position: "end", color: colors[i], fontSize: 10 } });
+      });
+      chart.setOption(opt);
+      drawings.push({ type: "fibonacci", p1: p1.data, p2: p2.data });
+    }
+
+    function addRect(p1, p2) {
+      const opt = chart.getOption();
+      const px1 = chart.convertToPixel({ seriesIndex: 0 }, [p1.data[0], p1.data[1]]);
+      const px2 = chart.convertToPixel({ seriesIndex: 0 }, [p2.data[0], p2.data[1]]);
+      const g = opt.graphic || [];
+      g.push({ type: "rect", shape: { x: Math.min(px1[0],px2[0]), y: Math.min(px1[1],px2[1]), width: Math.abs(px2[0]-px1[0]), height: Math.abs(px2[1]-px1[1]) }, style: { fill: "rgba(88,166,255,0.06)", stroke: "#58a6ff", lineWidth: 1 }, z: 100 });
+      opt.graphic = g;
+      chart.setOption(opt);
+      drawings.push({ type: "rect", p1: p1.data, p2: p2.data });
+    }
+
+    function clearDraw() {
+      drawings = []; drawPts = [];
+      const opt = chart.getOption();
+      opt.series[0].markLine = { data: [] }; opt.graphic = [];
+      chart.setOption(opt);
+    }
+
+    function redrawAll() {
+      if (!drawings.length) return;
+      const saved = [...drawings]; drawings = [];
+      saved.forEach(d => {
+        if (d.type === "hline") addHLine(d.price);
+        else if (d.type === "trendline") addTrend({ data: d.p1 }, { data: d.p2 });
+        else if (d.type === "fibonacci") addFib({ data: d.p1 }, { data: d.p2 });
+        else if (d.type === "rect") addRect({ data: d.p1 }, { data: d.p2 });
+      });
+    }
+
+    // ===== Backtest (all in browser) =====
+    function runBacktest() {
+      const stgName = document.getElementById("sel-stg").value;
+      const stg = { ma_cross: { short: 10, long: 30 }, rsi: { period: 14, oversold: 30, overbought: 70 }, bollinger: { period: 20, std: 2 } }[stgName];
+      const closes = klineData.map(d => d.close);
+      let signals = [];
+
+      if (stgName === "ma_cross") {
+        const ma = (arr, p) => arr.map((_, i) => i < p - 1 ? null : arr.slice(i - p + 1, i + 1).reduce((a, b) => a + b) / p);
+        const short = ma(closes, stg.short), long = ma(closes, stg.long);
+        for (let i = 1; i < klineData.length; i++) {
+          if (short[i] == null || long[i] == null || short[i - 1] == null || long[i - 1] == null) continue;
+          if (short[i - 1] <= long[i - 1] && short[i] > long[i]) signals.push({ idx: i, time: klineData[i].time, signal: "buy", price: closes[i] });
+          else if (short[i - 1] >= long[i - 1] && short[i] < long[i]) signals.push({ idx: i, time: klineData[i].time, signal: "sell", price: closes[i] });
+        }
+      } else if (stgName === "rsi") {
+        const rsi = [null]; let ag = 0, al = 0;
+        for (let i = 1; i <= stg.period && i < closes.length; i++) { const d = closes[i] - closes[i - 1]; ag += Math.max(d, 0); al += Math.max(-d, 0); }
+        ag /= stg.period; al /= stg.period;
+        for (let i = 0; i < stg.period; i++) rsi.push(null);
+        rsi.push(al === 0 ? 100 : 100 - 100 / (1 + ag / al));
+        let wasO = false, wasB = false;
+        for (let i = stg.period + 1; i < closes.length; i++) {
+          const d = closes[i] - closes[i - 1];
+          ag = (ag * (stg.period - 1) + Math.max(d, 0)) / stg.period;
+          al = (al * (stg.period - 1) + Math.max(-d, 0)) / stg.period;
+          const r = al === 0 ? 100 : 100 - 100 / (1 + ag / al);
+          rsi.push(r);
+          if (rsi[i - 1] < stg.oversold) wasO = true;
+          if (rsi[i - 1] > stg.overbought) wasB = true;
+          if (wasO && r > stg.oversold) { signals.push({ idx: i, time: klineData[i].time, signal: "buy", price: closes[i] }); wasO = false; }
+          if (wasB && r < stg.overbought) { signals.push({ idx: i, time: klineData[i].time, signal: "sell", price: closes[i] }); wasB = false; }
+        }
+      } else if (stgName === "bollinger") {
+        for (let i = stg.period; i < closes.length; i++) {
+          const w = closes.slice(i - stg.period, i);
+          const ma = w.reduce((a, b) => a + b) / stg.period;
+          const std = Math.sqrt(w.reduce((s, x) => s + (x - ma) ** 2, 0) / stg.period);
+          if (closes[i] < ma - stg.std * std) signals.push({ idx: i, time: klineData[i].time, signal: "buy", price: closes[i] });
+          else if (closes[i] > ma + stg.std * std) signals.push({ idx: i, time: klineData[i].time, signal: "sell", price: closes[i] });
+        }
+      }
+
+      // Simulate
+      let cap = 10000, pos = 0, entryP = 0, trades = [], equity = [];
+      let si = 0;
+      for (let i = 0; i < klineData.length; i++) {
+        let sig = null;
+        if (si < signals.length && signals[si].idx === i) { sig = signals[si]; si++; }
+        if (sig) {
+          if (sig.signal === "buy" && cap > 0) { pos = cap / sig.price; entryP = sig.price; cap = 0; trades.push({ time: sig.time, type: "buy", price: sig.price }); }
+          else if (sig.signal === "sell" && pos > 0) { cap = pos * sig.price; trades.push({ time: sig.time, type: "sell", price: sig.price, pnl: ((sig.price - entryP) / entryP * 100).toFixed(2) }); pos = 0; }
+        }
+        equity.push({ time: klineData[i].time, val: +(cap + pos * klineData[i].close).toFixed(2) });
+      }
+
+      const final = cap + pos * klineData[klineData.length - 1].close;
+      const sells = trades.filter(t => t.type === "sell");
+      const wins = sells.filter(t => +t.pnl > 0);
+      const totalRet = (final - 10000) / 100;
+      let peak = 10000, maxDD = 0;
+      equity.forEach(e => { if (e.val > peak) peak = e.val; const dd = (e.val - peak) / peak * 100; if (dd < maxDD) maxDD = dd; });
+      const annRet = (Math.pow(final / 10000, 365 / Math.max(klineData.length, 1)) - 1) * 100;
+
+      // Display
+      document.getElementById("bt-panel").classList.remove("hide");
+      document.getElementById("b-final").textContent = "$" + final.toLocaleString(undefined, { maximumFractionDigits: 0 });
+      setVal("b-ret", totalRet.toFixed(2) + "%", totalRet);
+      setVal("b-ann", annRet.toFixed(2) + "%", annRet);
+      setVal("b-dd", maxDD.toFixed(2) + "%", maxDD);
+      document.getElementById("b-wr").textContent = sells.length ? (wins.length / sells.length * 100).toFixed(1) + "%" : "0%";
+      document.getElementById("b-tc").textContent = sells.length;
+
+      // Equity chart
+      if (!eqChart) eqChart = echarts.init(document.getElementById("equity-chart"));
+      eqChart.setOption({
+        backgroundColor: "transparent",
+        tooltip: { trigger: "axis", backgroundColor: "rgba(13,17,23,0.9)", borderColor: "rgba(255,255,255,0.08)", textStyle: { color: "#e6edf3", fontSize: 11 } },
+        grid: { left: 50, right: 10, top: 10, bottom: 20 },
+        xAxis: { type: "category", data: equity.map(e => e.time), axisLabel: { color: "#484f58", fontSize: 10 }, axisLine: { lineStyle: { color: "rgba(255,255,255,0.06)" } }, splitLine: { show: false } },
+        yAxis: { type: "value", axisLabel: { color: "#484f58", fontSize: 10 }, splitLine: { lineStyle: { color: "rgba(255,255,255,0.04)" } }, axisLine: { show: false } },
+        series: [{ type: "line", data: equity.map(e => e.val), smooth: true, lineStyle: { color: "#58a6ff", width: 1.5 }, areaStyle: { color: { type: "linear", x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: "rgba(88,166,255,0.2)" }, { offset: 1, color: "rgba(88,166,255,0)" }] } }, showSymbol: false }]
+      }, true);
+
+      // Trades table
+      const tbody = document.getElementById("bt-tbody");
+      tbody.innerHTML = "";
+      trades.forEach(t => {
+        const tr = document.createElement("tr");
+        const pnl = t.pnl !== undefined ? `<span class="${+t.pnl >= 0 ? "c-green" : "c-red"}">${+t.pnl >= 0 ? "+" : ""}${t.pnl}%</span>` : "-";
+        tr.innerHTML = `<td>${t.time}</td><td class="${t.type === "buy" ? "c-green" : "c-red"}">${t.type === "buy" ? "买入" : "卖出"}</td><td>$${t.price.toLocaleString()}</td><td>${pnl}</td>`;
+        tbody.appendChild(tr);
+      });
+
+      renderChart(klineData, trades);
+    }
+
+    function setVal(id, text, v) {
+      const el = document.getElementById(id);
+      el.textContent = text;
+      el.className = "val " + (v >= 0 ? "up" : "down");
+    }
+  </script>
+</body>
+</html>
