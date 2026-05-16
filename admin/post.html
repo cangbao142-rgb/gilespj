@@ -44,13 +44,8 @@
 
           <div class="form-group">
             <label>封面图片（可选）</label>
-            <div class="upload-area" id="coverUpload">
-              <div class="icon">🖼️</div>
-              <p>点击上传封面图片</p>
-              <input type="file" id="coverFile" accept="image/*" style="display:none;">
-            </div>
+            <input type="text" id="coverUrl" placeholder="输入图片 URL，如 https://example.com/cover.jpg">
             <div id="coverPreview" style="margin-top:10px;"></div>
-            <input type="hidden" id="coverUrl">
           </div>
 
           <div class="form-group">
@@ -119,24 +114,14 @@
       document.getElementById('pageTitle').textContent = map[category] || '发布内容';
     }
 
-    // 封面图片上传
-    document.getElementById('coverUpload').addEventListener('click', () => {
-      document.getElementById('coverFile').click();
-    });
-
-    document.getElementById('coverFile').addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      try {
-        Utils.toast('上传中...', 'warning');
-        const url = await Articles.uploadImage(file);
-        document.getElementById('coverUrl').value = url;
-        document.getElementById('coverPreview').innerHTML = `
-          <img src="${url}" style="max-width:200px;border-radius:6px;">
-        `;
-        Utils.toast('封面上传成功');
-      } catch (err) {
-        Utils.toast('上传失败: ' + err.message, 'error');
+    // 封面图片 URL 预览
+    document.getElementById('coverUrl').addEventListener('input', (e) => {
+      const url = e.target.value.trim();
+      const preview = document.getElementById('coverPreview');
+      if (url) {
+        preview.innerHTML = `<img src="${url}" style="max-width:200px;border-radius:6px;" onerror="this.style.display='none'">`;
+      } else {
+        preview.innerHTML = '';
       }
     });
 

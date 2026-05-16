@@ -144,5 +144,36 @@ const Utils = {
         a.classList.add('active');
       }
     });
+
+    // 鼠标跟随光晕
+    Utils.initCursorGlow();
+  },
+
+  initCursorGlow() {
+    const glow = document.createElement('div');
+    glow.className = 'cursor-glow';
+    document.body.appendChild(glow);
+
+    let mouseX = 0, mouseY = 0;
+    let curX = 0, curY = 0;
+
+    document.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      glow.style.opacity = '1';
+    });
+
+    document.addEventListener('mouseleave', () => {
+      glow.style.opacity = '0';
+    });
+
+    function animate() {
+      curX += (mouseX - curX) * 0.08;
+      curY += (mouseY - curY) * 0.08;
+      glow.style.left = curX + 'px';
+      glow.style.top = curY + 'px';
+      requestAnimationFrame(animate);
+    }
+    animate();
   }
 };

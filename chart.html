@@ -7,197 +7,170 @@
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
   <style>
-    body {
-      background: #08090d;
-      background-image:
-        radial-gradient(ellipse at 20% 50%, rgba(88,166,255,0.04) 0%, transparent 50%),
-        radial-gradient(ellipse at 80% 20%, rgba(167,139,250,0.03) 0%, transparent 50%);
-      overflow: hidden; height: 100vh; display: flex; flex-direction: column;
-    }
-    .navbar {
-      background: rgba(10,12,18,0.7);
-      backdrop-filter: blur(24px) saturate(1.5);
-      -webkit-backdrop-filter: blur(24px) saturate(1.5);
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
+    body { display: flex; flex-direction: column; min-height: 100vh; }
 
-    /* ===== 顶部行情信息 ===== */
+    /* ===== 行情信息栏 ===== */
     .ticker-bar {
-      height: 44px; display: flex; align-items: center; gap: 16px; padding: 0 24px;
-      background: rgba(10,12,18,0.5);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(255,255,255,0.04);
+      height: 48px; display: flex; align-items: center; gap: 16px; padding: 0 24px;
+      background: linear-gradient(135deg, rgba(0,149,255,0.04) 0%, rgba(66,211,146,0.03) 100%);
+      border-bottom: 1px solid var(--border);
     }
-    .ticker-sym { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: 0.3px; }
-    .ticker-price { font-size: 15px; font-weight: 600; color: #e6edf3; }
-    .ticker-chg {
-      font-size: 12px; padding: 3px 10px; border-radius: 6px; font-weight: 600;
-      backdrop-filter: blur(8px);
-    }
-    .ticker-chg.up { color: #3fb950; background: rgba(63,185,80,0.1); border: 1px solid rgba(63,185,80,0.15); }
-    .ticker-chg.down { color: #f85149; background: rgba(248,81,73,0.1); border: 1px solid rgba(248,81,73,0.15); }
-    .ticker-extra { color: #6e7681; font-size: 12px; margin-left: auto; display: flex; gap: 20px; }
-    .ticker-extra span { color: #8b949e; font-weight: 500; }
+    .ticker-sym { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: 0.3px; }
+    .ticker-price { font-size: 15px; font-weight: 600; color: var(--text); }
+    .ticker-chg { font-size: 12px; padding: 3px 10px; border-radius: 6px; font-weight: 600; }
+    .ticker-chg.up { color: #16a34a; background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.15); }
+    .ticker-chg.down { color: #dc2626; background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.15); }
+    .ticker-extra { color: var(--text-3); font-size: 12px; margin-left: auto; display: flex; gap: 20px; }
+    .ticker-extra span { color: var(--text-2); font-weight: 500; }
 
     /* ===== K线图区域 ===== */
-    .chart-area { flex: 1; position: relative; overflow: hidden; }
+    .chart-wrapper {
+      max-width: 1200px; width: 100%; margin: 24px auto 0; padding: 0 24px;
+    }
+    .chart-area {
+      position: relative; overflow: hidden;
+      aspect-ratio: 4 / 3;
+      background: linear-gradient(135deg, rgba(0,149,255,0.04) 0%, rgba(66,211,146,0.03) 100%);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+    }
     #kline-chart { width: 100%; height: 100%; }
 
     /* ===== 回测浮层 ===== */
     .bt-panel {
-      position: absolute; right: 12px; top: 12px; bottom: 12px; width: 360px; z-index: 30;
-      background: rgba(10,12,18,0.65);
-      backdrop-filter: blur(28px) saturate(1.5);
-      -webkit-backdrop-filter: blur(28px) saturate(1.5);
-      border: 1px solid rgba(255,255,255,0.07);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04);
+      position: absolute; right: 12px; top: 12px; bottom: 12px; width: 340px; z-index: 30;
+      background: rgba(255,255,255,0.95);
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
       border-radius: 16px; overflow-y: auto; padding: 16px;
       transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.35s;
     }
-    .bt-panel.hide { transform: translateX(420px); opacity: 0; pointer-events: none; }
+    .bt-panel.hide { transform: translateX(400px); opacity: 0; pointer-events: none; }
     .bt-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .bt-head h3 { font-size: 14px; font-weight: 600; color: #e6edf3; letter-spacing: 0.3px; }
+    .bt-head h3 { font-size: 14px; font-weight: 600; color: var(--text); }
     .bt-close {
-      cursor: pointer; color: #6e7681; font-size: 18px; width: 28px; height: 28px;
+      cursor: pointer; color: var(--text-3); font-size: 18px; width: 28px; height: 28px;
       display: flex; align-items: center; justify-content: center; border-radius: 8px;
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(0,149,255,0.06); border: 1px solid var(--border);
       transition: all 0.2s;
     }
-    .bt-close:hover { background: rgba(255,255,255,0.1); color: #e6edf3; border-color: rgba(255,255,255,0.12); }
+    .bt-close:hover { background: rgba(0,149,255,0.12); color: var(--text); }
     .bt-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
     .bt-m {
-      background: rgba(255,255,255,0.03);
-      backdrop-filter: blur(8px);
+      background: linear-gradient(135deg, rgba(0,149,255,0.04) 0%, rgba(66,211,146,0.03) 100%);
       padding: 10px; border-radius: 10px; text-align: center;
-      border: 1px solid rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
       transition: border-color 0.2s;
     }
-    .bt-m:hover { border-color: rgba(255,255,255,0.08); }
-    .bt-m .lbl { display: block; font-size: 9px; color: #6e7681; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 500; }
-    .bt-m .val { font-size: 15px; font-weight: 700; color: #e6edf3; }
-    .bt-m .val.up { color: #3fb950; }
-    .bt-m .val.down { color: #f85149; }
+    .bt-m:hover { border-color: rgba(0,149,255,0.2); }
+    .bt-m .lbl { display: block; font-size: 9px; color: var(--text-3); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 500; }
+    .bt-m .val { font-size: 15px; font-weight: 700; color: var(--text); }
+    .bt-m .val.up { color: #16a34a; }
+    .bt-m .val.down { color: #dc2626; }
     #equity-chart { width: 100%; height: 150px; margin-bottom: 12px; border-radius: 10px; overflow: hidden; }
     .bt-table { width: 100%; border-collapse: collapse; }
-    .bt-table th { padding: 6px 8px; text-align: left; color: #6e7681; font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 1px solid rgba(255,255,255,0.05); font-weight: 500; }
-    .bt-table td { padding: 6px 8px; font-size: 11px; border-bottom: 1px solid rgba(255,255,255,0.03); }
-    .c-green { color: #3fb950; } .c-red { color: #f85149; }
+    .bt-table th { padding: 6px 8px; text-align: left; color: var(--text-3); font-size: 10px; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 1px solid var(--border); font-weight: 500; }
+    .bt-table td { padding: 6px 8px; font-size: 11px; border-bottom: 1px solid var(--border); color: var(--text-2); }
+    .c-green { color: #16a34a; } .c-red { color: #dc2626; }
 
     /* ===== 底部控制栏 ===== */
     .ctrl-bar {
       min-height: 54px; padding: 10px 24px;
-      background: rgba(10,12,18,0.6);
-      backdrop-filter: blur(24px) saturate(1.5);
-      -webkit-backdrop-filter: blur(24px) saturate(1.5);
-      border-top: 1px solid rgba(255,255,255,0.05);
+      background: linear-gradient(135deg, rgba(0,149,255,0.04) 0%, rgba(66,211,146,0.03) 100%);
+      border-top: 1px solid var(--border);
+      margin-top: 24px;
     }
     .ctrl-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
     .cg { display: flex; flex-direction: column; gap: 4px; }
-    .cg label { font-size: 10px; color: #6e7681; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
+    .cg label { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 500; }
 
     .ctrl-bar select {
-      color: #e6edf3;
-      background: rgba(16,18,24,0.95);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--border);
       padding: 7px 28px 7px 12px;
       border-radius: 9px; font-size: 12px; outline: none; cursor: pointer;
       transition: all 0.25s;
       appearance: none;
-      color-scheme: dark;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236e7681'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394a3b8'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 10px center;
     }
-    .ctrl-bar select option {
-      background: rgba(16,18,24,0.98);
-      color: #e6edf3;
-      padding: 6px 10px;
-    }
-    .ctrl-bar select:hover {
-      border-color: rgba(255,255,255,0.15);
-      background-color: rgba(255,255,255,0.06);
-      box-shadow: 0 0 12px rgba(88,166,255,0.08);
-    }
-    .ctrl-bar select:focus {
-      border-color: rgba(88,166,255,0.5);
-      box-shadow: 0 0 0 2px rgba(88,166,255,0.12);
-    }
+    .ctrl-bar select option { background: #fff; color: var(--text); padding: 6px 10px; }
+    .ctrl-bar select:hover { border-color: rgba(0,149,255,0.3); }
+    .ctrl-bar select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0,149,255,0.12); }
 
     .ctrl-bar button {
-      padding: 7px 18px;
-      color: #e6edf3;
-      background: rgba(255,255,255,0.04);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255,255,255,0.08);
+      padding: 7px 18px; color: var(--text);
+      background: #fff; border: 1px solid var(--border);
       border-radius: 9px; cursor: pointer; font-size: 12px; font-weight: 500;
       transition: all 0.25s;
-      position: relative; overflow: hidden;
     }
-    .ctrl-bar button::before {
-      content: ""; position: absolute; inset: 0;
-      background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 50%);
-      opacity: 0; transition: opacity 0.25s;
-    }
-    .ctrl-bar button:hover {
-      background: rgba(255,255,255,0.07);
-      border-color: rgba(255,255,255,0.15);
-      box-shadow: 0 2px 12px rgba(0,0,0,0.2), 0 0 16px rgba(88,166,255,0.06);
-      transform: translateY(-1px);
-    }
-    .ctrl-bar button:hover::before { opacity: 1; }
+    .ctrl-bar button:hover { border-color: rgba(0,149,255,0.3); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
     .ctrl-bar button:active { transform: translateY(0); }
 
     .ctrl-bar button.pri {
-      background: rgba(35,134,54,0.6);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(63,185,80,0.25);
-      color: #fff;
-      box-shadow: 0 0 16px rgba(63,185,80,0.1);
+      background: var(--primary); border-color: var(--primary); color: #fff;
     }
-    .ctrl-bar button.pri::before {
-      background: linear-gradient(135deg, rgba(63,185,80,0.15) 0%, transparent 50%);
-    }
-    .ctrl-bar button.pri:hover {
-      background: rgba(46,160,67,0.7);
-      border-color: rgba(63,185,80,0.4);
-      box-shadow: 0 4px 20px rgba(63,185,80,0.15), 0 0 24px rgba(63,185,80,0.08);
-    }
+    .ctrl-bar button.pri:hover { background: #0080e0; box-shadow: 0 2px 12px rgba(0,149,255,0.2); }
     .ctrl-bar button:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; }
 
-    .divider { width: 1px; height: 24px; background: rgba(255,255,255,0.06); margin: 0 4px; }
+    .divider { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
 
     .draw-tools { display: flex; gap: 3px; align-items: center; }
     .draw-tools .tb {
       width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;
-      border-radius: 9px; cursor: pointer; color: #6e7681;
-      background: rgba(255,255,255,0.03);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 9px; cursor: pointer; color: var(--text-3);
+      background: #fff; border: 1px solid var(--border);
       transition: all 0.25s;
     }
-    .draw-tools .tb:hover {
-      background: rgba(255,255,255,0.07);
-      color: #e6edf3;
-      border-color: rgba(255,255,255,0.1);
-      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-      transform: translateY(-1px);
-    }
-    .draw-tools .tb.on {
-      background: rgba(88,166,255,0.12);
-      color: #58a6ff;
-      border-color: rgba(88,166,255,0.25);
-      box-shadow: 0 0 12px rgba(88,166,255,0.1);
-    }
+    .draw-tools .tb:hover { color: var(--text); border-color: rgba(0,149,255,0.3); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .draw-tools .tb.on { background: rgba(0,149,255,0.08); color: var(--primary); border-color: rgba(0,149,255,0.25); }
     .draw-tools .tb:active { transform: translateY(0); }
     .draw-tools .tb svg { width: 16px; height: 16px; }
+
+    /* ===== ECharts 浅色主题覆盖 ===== */
+    .chart-area { --echarts-tooltip-bg: rgba(255,255,255,0.95); }
+
+    @media (max-width: 768px) {
+      .chart-wrapper { padding: 0 12px; }
+      .chart-area { aspect-ratio: auto; height: 400px; }
+      .bt-panel { width: 280px; }
+      .ticker-bar { gap: 10px; padding: 0 12px; }
+      .ticker-extra { gap: 10px; }
+    }
   </style>
 </head>
 <body>
+  <!-- 全页滚动文字背景 -->
+  <div class="page-pattern" aria-hidden="true">
+    <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
+    <div class="pattern-row"><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span></div>
+    <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
+    <div class="pattern-row"><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span></div>
+    <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
+    <div class="pattern-row"><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span></div>
+    <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
+    <div class="pattern-row"><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span></div>
+    <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
+    <div class="pattern-row"><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span></div>
+    <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
+    <div class="pattern-row"><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span></div>
+    <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
+    <div class="pattern-row"><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span></div>
+    <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
+    <div class="pattern-row"><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span></div>
+    <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
+    <div class="pattern-row"><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span></div>
+    <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
+    <div class="pattern-row"><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span></div>
+    <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
+    <div class="pattern-row"><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span></div>
+    <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
+    <div class="pattern-row"><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span></div>
+    <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
+  </div>
+
   <!-- 导航栏 -->
   <nav class="navbar">
     <div class="container">
@@ -225,30 +198,32 @@
   </div>
 
   <!-- K线图 -->
-  <div class="chart-area">
-    <div id="kline-chart"></div>
+  <div class="chart-wrapper">
+    <div class="chart-area">
+      <div id="kline-chart"></div>
 
-    <!-- 回测浮层 -->
-    <div id="bt-panel" class="bt-panel hide">
-      <div class="bt-head">
-        <h3>回测结果</h3>
-        <span class="bt-close" onclick="document.getElementById('bt-panel').classList.add('hide')">&times;</span>
+      <!-- 回测浮层 -->
+      <div id="bt-panel" class="bt-panel hide">
+        <div class="bt-head">
+          <h3>回测结果</h3>
+          <span class="bt-close" onclick="document.getElementById('bt-panel').classList.add('hide')">&times;</span>
+        </div>
+        <div class="bt-metrics">
+          <div class="bt-m"><span class="lbl">初始资金</span><span class="val" id="b-init">$10,000</span></div>
+          <div class="bt-m"><span class="lbl">最终资金</span><span class="val" id="b-final">-</span></div>
+          <div class="bt-m"><span class="lbl">总收益率</span><span class="val" id="b-ret">-</span></div>
+          <div class="bt-m"><span class="lbl">年化收益</span><span class="val" id="b-ann">-</span></div>
+          <div class="bt-m"><span class="lbl">最大回撤</span><span class="val" id="b-dd">-</span></div>
+          <div class="bt-m"><span class="lbl">胜率</span><span class="val" id="b-wr">-</span></div>
+          <div class="bt-m"><span class="lbl">交易次数</span><span class="val" id="b-tc">-</span></div>
+          <div class="bt-m"><span class="lbl">夏普比率</span><span class="val" id="b-sp">-</span></div>
+        </div>
+        <div id="equity-chart"></div>
+        <table class="bt-table">
+          <thead><tr><th>时间</th><th>操作</th><th>价格</th><th>盈亏</th></tr></thead>
+          <tbody id="bt-tbody"></tbody>
+        </table>
       </div>
-      <div class="bt-metrics">
-        <div class="bt-m"><span class="lbl">初始资金</span><span class="val" id="b-init">$10,000</span></div>
-        <div class="bt-m"><span class="lbl">最终资金</span><span class="val" id="b-final">-</span></div>
-        <div class="bt-m"><span class="lbl">总收益率</span><span class="val" id="b-ret">-</span></div>
-        <div class="bt-m"><span class="lbl">年化收益</span><span class="val" id="b-ann">-</span></div>
-        <div class="bt-m"><span class="lbl">最大回撤</span><span class="val" id="b-dd">-</span></div>
-        <div class="bt-m"><span class="lbl">胜率</span><span class="val" id="b-wr">-</span></div>
-        <div class="bt-m"><span class="lbl">交易次数</span><span class="val" id="b-tc">-</span></div>
-        <div class="bt-m"><span class="lbl">夏普比率</span><span class="val" id="b-sp">-</span></div>
-      </div>
-      <div id="equity-chart"></div>
-      <table class="bt-table">
-        <thead><tr><th>时间</th><th>操作</th><th>价格</th><th>盈亏</th></tr></thead>
-        <tbody id="bt-tbody"></tbody>
-      </table>
     </div>
   </div>
 
@@ -302,16 +277,25 @@
     </div>
   </div>
 
+  <!-- 页脚 -->
+  <footer class="footer">
+    <span>&copy; 2026 交易笔记 - 记录每一笔交易</span>
+  </footer>
+
+  <script src="https://unpkg.com/@supabase/supabase-js@1"></script>
   <script src="js/config.js"></script>
+  <script src="js/articles.js"></script>
+  <script src="js/utils.js"></script>
   <script>
-    // ===== Flask Backend API =====
-    const API = "http://localhost:5000";
+    // ===== API (Vercel Serverless Function) =====
+    const API = "/api/binance";
 
     let chart, eqChart, klineData = [];
     let drawTool = "none", drawPts = [], drawings = [];
 
     // Init
     document.addEventListener("DOMContentLoaded", () => {
+      Utils.initNav();
       chart = echarts.init(document.getElementById("kline-chart"));
       setupTools();
       fetchKlines();
@@ -328,7 +312,7 @@
       const intv = document.getElementById("sel-int").value;
 
       try {
-        const resp = await fetch(`${API}/api/klines/live?symbol=${sym}&interval=${intv}&limit=300`);
+        const resp = await fetch(`${API}?endpoint=klines&symbol=${sym}&interval=${intv}&limit=300`);
         const raw = await resp.json();
         if (raw.error) { console.error(raw.error); return; }
         klineData = raw.map(d => ({
@@ -345,7 +329,7 @@
     async function fetchTicker() {
       const sym = document.getElementById("sel-sym").value;
       try {
-        const resp = await fetch(`${API}/api/ticker?symbol=${sym}`);
+        const resp = await fetch(`${API}?endpoint=ticker&symbol=${sym}`);
         const d = await resp.json();
         if (d.error) return;
         document.getElementById("t-sym").textContent = sym.replace("USDT", "/USDT");
@@ -395,29 +379,29 @@
 
       chart.setOption({
         backgroundColor: "transparent", animation: false,
-        tooltip: { trigger: "axis", axisPointer: { type: "cross", lineStyle: { color: "rgba(255,255,255,0.1)" } }, backgroundColor: "rgba(13,17,23,0.9)", borderColor: "rgba(255,255,255,0.08)", textStyle: { color: "#e6edf3", fontSize: 12 } },
+        tooltip: { trigger: "axis", axisPointer: { type: "cross", lineStyle: { color: "rgba(0,0,0,0.08)" } }, backgroundColor: "rgba(255,255,255,0.95)", borderColor: "rgba(0,0,0,0.08)", textStyle: { color: "#213547", fontSize: 12 } },
         grid: [{ left: 60, right: 15, top: 20, bottom: "28%" }, { left: 60, right: 15, top: "78%", bottom: 30 }],
         xAxis: [
-          { type: "category", data: dates, gridIndex: 0, axisLabel: { color: "#484f58", fontSize: 11 }, axisLine: { lineStyle: { color: "rgba(255,255,255,0.06)" } }, splitLine: { show: false } },
-          { type: "category", data: dates, gridIndex: 1, axisLabel: { show: false }, axisLine: { lineStyle: { color: "rgba(255,255,255,0.06)" } }, splitLine: { show: false } }
+          { type: "category", data: dates, gridIndex: 0, axisLabel: { color: "#94a3b8", fontSize: 11 }, axisLine: { lineStyle: { color: "rgba(0,0,0,0.06)" } }, splitLine: { show: false } },
+          { type: "category", data: dates, gridIndex: 1, axisLabel: { show: false }, axisLine: { lineStyle: { color: "rgba(0,0,0,0.06)" } }, splitLine: { show: false } }
         ],
         yAxis: [
-          { scale: true, gridIndex: 0, axisLabel: { color: "#484f58", fontSize: 11 }, splitLine: { lineStyle: { color: "rgba(255,255,255,0.04)" } }, axisLine: { show: false } },
-          { scale: true, gridIndex: 1, axisLabel: { color: "#484f58", fontSize: 11 }, splitLine: { lineStyle: { color: "rgba(255,255,255,0.04)" } }, axisLine: { show: false } }
+          { scale: true, gridIndex: 0, axisLabel: { color: "#94a3b8", fontSize: 11 }, splitLine: { lineStyle: { color: "rgba(0,0,0,0.04)" } }, axisLine: { show: false } },
+          { scale: true, gridIndex: 1, axisLabel: { color: "#94a3b8", fontSize: 11 }, splitLine: { lineStyle: { color: "rgba(0,0,0,0.04)" } }, axisLine: { show: false } }
         ],
         dataZoom: [
           { type: "inside", xAxisIndex: [0, 1], start: 60, end: 100 },
-          { type: "slider", xAxisIndex: [0, 1], start: 60, end: 100, height: 15, bottom: 8, borderColor: "transparent", backgroundColor: "rgba(255,255,255,0.03)", fillerColor: "rgba(88,166,255,0.1)", handleStyle: { color: "#58a6ff" }, textStyle: { color: "#484f58" } }
+          { type: "slider", xAxisIndex: [0, 1], start: 60, end: 100, height: 15, bottom: 8, borderColor: "transparent", backgroundColor: "rgba(0,0,0,0.02)", fillerColor: "rgba(0,149,255,0.1)", handleStyle: { color: "#0095ff" }, textStyle: { color: "#94a3b8" } }
         ],
         series: [
-          { type: "candlestick", data: ohlc, xAxisIndex: 0, yAxisIndex: 0, itemStyle: { color: "#3fb950", color0: "#f85149", borderColor: "#3fb950", borderColor0: "#f85149" },
+          { type: "candlestick", data: ohlc, xAxisIndex: 0, yAxisIndex: 0, itemStyle: { color: "#16a34a", color0: "#dc2626", borderColor: "#16a34a", borderColor0: "#dc2626" },
             markPoint: { data: [
-              ...buys.map(p => ({ ...p, symbol: "triangle", symbolSize: 10, symbolRotate: 0, itemStyle: { color: "#3fb950" }, label: { show: true, formatter: "B", color: "#3fb950", fontSize: 9, position: "bottom" } })),
-              ...sells.map(p => ({ ...p, symbol: "triangle", symbolSize: 10, symbolRotate: 180, itemStyle: { color: "#f85149" }, label: { show: true, formatter: "S", color: "#f85149", fontSize: 9, position: "top" } }))
+              ...buys.map(p => ({ ...p, symbol: "triangle", symbolSize: 10, symbolRotate: 0, itemStyle: { color: "#16a34a" }, label: { show: true, formatter: "B", color: "#16a34a", fontSize: 9, position: "bottom" } })),
+              ...sells.map(p => ({ ...p, symbol: "triangle", symbolSize: 10, symbolRotate: 180, itemStyle: { color: "#dc2626" }, label: { show: true, formatter: "S", color: "#dc2626", fontSize: 9, position: "top" } }))
             ] },
             markLine: { data: [] }
           },
-          { type: "bar", data: vols, xAxisIndex: 1, yAxisIndex: 1, itemStyle: { color: p => { const d = ohlc[p.dataIndex]; return d[1] >= d[0] ? "rgba(63,185,80,0.3)" : "rgba(248,81,73,0.3)"; } } }
+          { type: "bar", data: vols, xAxisIndex: 1, yAxisIndex: 1, itemStyle: { color: p => { const d = ohlc[p.dataIndex]; return d[1] >= d[0] ? "rgba(22,163,74,0.25)" : "rgba(220,38,38,0.25)"; } } }
         ]
       }, true);
       redrawAll();
@@ -451,15 +435,15 @@
 
     function addHLine(price) {
       const opt = chart.getOption();
-      if (!opt.series[0].markLine) opt.series[0].markLine = { data: [], silent: true, lineStyle: { color: "#58a6ff", width: 1, type: "dashed" } };
-      opt.series[0].markLine.data.push({ yAxis: price, label: { formatter: price.toFixed(2), position: "end", color: "#58a6ff", fontSize: 11 } });
+      if (!opt.series[0].markLine) opt.series[0].markLine = { data: [], silent: true, lineStyle: { color: "#0095ff", width: 1, type: "dashed" } };
+      opt.series[0].markLine.data.push({ yAxis: price, label: { formatter: price.toFixed(2), position: "end", color: "#0095ff", fontSize: 11 } });
       chart.setOption(opt);
       drawings.push({ type: "hline", price });
     }
 
     function addTrend(p1, p2) {
       const opt = chart.getOption();
-      if (!opt.series[0].markLine) opt.series[0].markLine = { data: [], silent: true, lineStyle: { color: "#a78bfa", width: 1.5 } };
+      if (!opt.series[0].markLine) opt.series[0].markLine = { data: [], silent: true, lineStyle: { color: "#7c3aed", width: 1.5 } };
       opt.series[0].markLine.data.push([{ coord: [p1.data[0], p1.data[1]], symbol: "circle", symbolSize: 4 }, { coord: [p2.data[0], p2.data[1]], symbol: "circle", symbolSize: 4 }]);
       chart.setOption(opt);
       drawings.push({ type: "trendline", p1: p1.data, p2: p2.data });
@@ -469,7 +453,7 @@
       const opt = chart.getOption();
       const y1 = p1.data[1], y2 = p2.data[1], diff = y2 - y1;
       const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
-      const colors = ["#3fb950", "#58a6ff", "#a78bfa", "#d2a8ff", "#f0883e", "#f85149", "#ff7b72"];
+      const colors = ["#16a34a", "#0095ff", "#7c3aed", "#a855f7", "#ea580c", "#dc2626", "#ef4444"];
       if (!opt.series[0].markLine) opt.series[0].markLine = { data: [], silent: true, lineStyle: { width: 1 } };
       levels.forEach((l, i) => {
         const p = y1 + diff * l;
@@ -484,7 +468,7 @@
       const px1 = chart.convertToPixel({ seriesIndex: 0 }, [p1.data[0], p1.data[1]]);
       const px2 = chart.convertToPixel({ seriesIndex: 0 }, [p2.data[0], p2.data[1]]);
       const g = opt.graphic || [];
-      g.push({ type: "rect", shape: { x: Math.min(px1[0],px2[0]), y: Math.min(px1[1],px2[1]), width: Math.abs(px2[0]-px1[0]), height: Math.abs(px2[1]-px1[1]) }, style: { fill: "rgba(88,166,255,0.06)", stroke: "#58a6ff", lineWidth: 1 }, z: 100 });
+      g.push({ type: "rect", shape: { x: Math.min(px1[0],px2[0]), y: Math.min(px1[1],px2[1]), width: Math.abs(px2[0]-px1[0]), height: Math.abs(px2[1]-px1[1]) }, style: { fill: "rgba(0,149,255,0.06)", stroke: "#0095ff", lineWidth: 1 }, z: 100 });
       opt.graphic = g;
       chart.setOption(opt);
       drawings.push({ type: "rect", p1: p1.data, p2: p2.data });
@@ -585,11 +569,11 @@
       if (!eqChart) eqChart = echarts.init(document.getElementById("equity-chart"));
       eqChart.setOption({
         backgroundColor: "transparent",
-        tooltip: { trigger: "axis", backgroundColor: "rgba(13,17,23,0.9)", borderColor: "rgba(255,255,255,0.08)", textStyle: { color: "#e6edf3", fontSize: 11 } },
+        tooltip: { trigger: "axis", backgroundColor: "rgba(255,255,255,0.95)", borderColor: "rgba(0,0,0,0.08)", textStyle: { color: "#213547", fontSize: 11 } },
         grid: { left: 50, right: 10, top: 10, bottom: 20 },
-        xAxis: { type: "category", data: equity.map(e => e.time), axisLabel: { color: "#484f58", fontSize: 10 }, axisLine: { lineStyle: { color: "rgba(255,255,255,0.06)" } }, splitLine: { show: false } },
-        yAxis: { type: "value", axisLabel: { color: "#484f58", fontSize: 10 }, splitLine: { lineStyle: { color: "rgba(255,255,255,0.04)" } }, axisLine: { show: false } },
-        series: [{ type: "line", data: equity.map(e => e.val), smooth: true, lineStyle: { color: "#58a6ff", width: 1.5 }, areaStyle: { color: { type: "linear", x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: "rgba(88,166,255,0.2)" }, { offset: 1, color: "rgba(88,166,255,0)" }] } }, showSymbol: false }]
+        xAxis: { type: "category", data: equity.map(e => e.time), axisLabel: { color: "#94a3b8", fontSize: 10 }, axisLine: { lineStyle: { color: "rgba(0,0,0,0.06)" } }, splitLine: { show: false } },
+        yAxis: { type: "value", axisLabel: { color: "#94a3b8", fontSize: 10 }, splitLine: { lineStyle: { color: "rgba(0,0,0,0.04)" } }, axisLine: { show: false } },
+        series: [{ type: "line", data: equity.map(e => e.val), smooth: true, lineStyle: { color: "#0095ff", width: 1.5 }, areaStyle: { color: { type: "linear", x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: "rgba(0,149,255,0.15)" }, { offset: 1, color: "rgba(0,149,255,0)" }] } }, showSymbol: false }]
       }, true);
 
       // Trades table
