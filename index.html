@@ -36,6 +36,13 @@
     <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
   </div>
 
+  <!-- 浮动渐变光球 -->
+  <div class="about-orbs" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
   <!-- 导航栏 -->
   <nav class="navbar">
     <div class="container">
@@ -43,7 +50,7 @@
       <button class="menu-toggle">☰</button>
       <ul class="nav-links">
         <li><a href="index.html" class="active">首页</a></li>
-        <li><a href="daily.html">每日盘解</a></li>
+        <li><a href="daily.html">今日盘解</a></li>
         <li><a href="chart.html">实时看盘</a></li>
         <li><a href="about.html">关于我</a></li>
       </ul>
@@ -57,7 +64,7 @@
 
   <!-- Showcase 精选卡片 -->
   <div class="container">
-    <div class="showcase" id="showcase"></div>
+    <div class="showcase" id="showcase" style="display:none"></div>
 
     <!-- 文章列表 -->
     <div class="headerRow">
@@ -106,9 +113,9 @@
         if (!data) return;
         const withCover = data.filter(p => p.cover_url).slice(0, 3);
         if (withCover.length === 0) {
-          container.style.display = 'none';
           return;
         }
+        container.style.display = 'grid';
         container.innerHTML = withCover.map(post => `
           <a href="article.html?id=${post.id}" class="showcaseCard">
             <img src="${post.cover_url}" alt="${post.title}">

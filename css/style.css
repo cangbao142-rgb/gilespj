@@ -650,6 +650,12 @@ img {
   margin: 0 auto;
 }
 
+.about-quote .quote-highlight {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
 .about-quote .quote-label {
   display: block;
   margin-top: 20px;
@@ -708,49 +714,59 @@ img {
   position: absolute;
   border-radius: 50%;
   filter: blur(80px);
-  opacity: 0.15;
+  opacity: 0.1;
+}
+
+.orb-2, .orb-3 {
+  opacity: 0.25;
 }
 
 .orb-1 {
-  width: 400px;
-  height: 400px;
+  width: 600px;
+  height: 600px;
   background: var(--primary);
-  top: -100px;
-  right: -100px;
-  animation: orbFloat1 12s ease-in-out infinite;
+  top: -150px;
+  right: -150px;
+  animation: orbFloat1 30s ease-in-out infinite;
 }
 
 .orb-2 {
-  width: 300px;
-  height: 300px;
+  width: 500px;
+  height: 500px;
   background: var(--accent);
-  bottom: 10%;
-  left: -80px;
-  animation: orbFloat2 15s ease-in-out infinite;
+  bottom: 5%;
+  left: -120px;
+  animation: orbFloat2 35s ease-in-out infinite;
 }
 
 .orb-3 {
-  width: 250px;
-  height: 250px;
+  width: 450px;
+  height: 450px;
   background: linear-gradient(135deg, #0095ff, #42d392);
   top: 50%;
-  right: 20%;
-  animation: orbFloat3 10s ease-in-out infinite;
+  right: 15%;
+  animation: orbFloat3 28s ease-in-out infinite;
 }
 
 @keyframes orbFloat1 {
   0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(-40px, 60px); }
+  25% { transform: translate(-300px, 200px); }
+  50% { transform: translate(-150px, 400px); }
+  75% { transform: translate(100px, 150px); }
 }
 
 @keyframes orbFloat2 {
   0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(50px, -40px); }
+  25% { transform: translate(250px, -150px); }
+  50% { transform: translate(400px, 100px); }
+  75% { transform: translate(100px, -300px); }
 }
 
 @keyframes orbFloat3 {
   0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(-30px, -50px); }
+  25% { transform: translate(-200px, -250px); }
+  50% { transform: translate(150px, -400px); }
+  75% { transform: translate(-350px, -100px); }
 }
 
 /* ========== 表单 ========== */
@@ -1063,6 +1079,35 @@ img {
   font-size: 16px;
 }
 
+.empty-today {
+  text-align: center;
+  padding: 100px 24px;
+}
+
+.empty-today h1 {
+  font-size: 120px;
+  font-weight: 800;
+  letter-spacing: -4px;
+  line-height: 1.1;
+  background: linear-gradient(135deg, var(--text) 0%, var(--text-2) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.empty-today p {
+  font-size: 16px;
+  color: var(--text-3);
+  margin-top: 16px;
+}
+
+@media (max-width: 768px) {
+  .empty-today h1 {
+    font-size: 64px;
+    letter-spacing: -2px;
+  }
+}
+
 /* ========== 页脚 (MiMo 简约风格) ========== */
 .footer {
   text-align: center;
@@ -1260,6 +1305,10 @@ img {
 
   .about-quote p {
     font-size: 16px;
+  }
+
+  .about-quote .quote-highlight {
+    font-size: 22px;
   }
 
   .about-stats {

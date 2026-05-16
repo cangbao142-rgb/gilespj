@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>每日盘解 - 交易笔记</title>
+  <title>今日盘解 - 交易笔记</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -36,6 +36,13 @@
     <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
   </div>
 
+  <!-- 浮动渐变光球 -->
+  <div class="about-orbs" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
   <!-- 导航栏 -->
   <nav class="navbar">
     <div class="container">
@@ -43,7 +50,7 @@
       <button class="menu-toggle">☰</button>
       <ul class="nav-links">
         <li><a href="index.html">首页</a></li>
-        <li><a href="daily.html" class="active">每日盘解</a></li>
+        <li><a href="daily.html" class="active">今日盘解</a></li>
         <li><a href="chart.html">实时看盘</a></li>
         <li><a href="about.html">关于我</a></li>
       </ul>
@@ -54,8 +61,8 @@
   <main class="main-content">
     <div class="container">
       <div class="headerRow">
-        <div class="headerTitle"><h2>每日盘解</h2></div>
-        <div class="headerDesc"><p>每日市场分析与操作记录</p></div>
+        <div class="headerTitle"><h2>今日盘解</h2></div>
+        <div class="headerDesc"><p>今日市场分析与操作记录</p></div>
       </div>
 
       <!-- 切换 -->
@@ -84,30 +91,49 @@
   <script src="js/articles.js"></script>
   <script src="js/utils.js"></script>
   <script>
-    let currentPage = 1;
     let currentType = 'daily';
 
-    async function loadDaily(page = 1) {
+    function getTodayRange() {
+      const now = new Date();
+      const offset = 8 * 60;
+      const local = new Date(now.getTime() + (offset + now.getTimezoneOffset()) * 60000);
+      const y = local.getFullYear();
+      const m = String(local.getMonth() + 1).padStart(2, '0');
+      const d = String(local.getDate()).padStart(2, '0');
+      const start = `${y}-${m}-${d}T00:00:00+08:00`;
+      const end = `${y}-${m}-${d}T23:59:59+08:00`;
+      return { start, end, dateStr: `${y}-${m}-${d}` };
+    }
+
+    async function loadToday() {
       const container = document.getElementById('dailyList');
       container.innerHTML = '<div class="loading"><div class="spinner"></div><p>加载中...</p></div>';
 
       try {
-        const { data, total } = await Articles.getList({
-          category: currentType,
-          page,
-          pageSize: 15
-        });
+        const { start, end, dateStr } = getTodayRange();
+        const { data, error } = await supabase
+          .from('articles')
+          .select('*')
+          .eq('category', currentType)
+          .gte('created_at', start)
+          .lte('created_at', end)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
 
         if (!data || data.length === 0) {
-          container.innerHTML = '<div class="empty-state"><div class="icon">📈</div><p>暂无内容</p></div>';
+          container.innerHTML = `
+            <div class="empty-today">
+              <h1>${currentType === 'daily' ? '今日盘解暂未发布' : '今日操作记录暂未发布'}</h1>
+              <p>${dateStr}</p>
+            </div>`;
           document.getElementById('pagination').innerHTML = '';
           return;
         }
 
-        const startIndex = (page - 1) * 15;
         container.innerHTML = data.map((post, i) => `
           <a href="article.html?id=${post.id}" class="blogRow">
-            <div class="blogIndex"><span>${String(startIndex + i + 1).padStart(2, '0')}</span></div>
+            <div class="blogIndex"><span>${String(i + 1).padStart(2, '0')}</span></div>
             <div class="blogInfo">
               <h3>${post.title}</h3>
               <p>${Articles.getExcerpt(post.content, 150)}</p>
@@ -119,13 +145,7 @@
           </a>
         `).join('');
 
-        currentPage = page;
-        Utils.renderPagination(document.getElementById('pagination'), {
-          total,
-          page,
-          pageSize: 15,
-          onChange: loadDaily
-        });
+        document.getElementById('pagination').innerHTML = '';
       } catch (err) {
         container.innerHTML = '<div class="empty-state"><p>加载失败</p></div>';
         console.error(err);
@@ -138,12 +158,12 @@
         document.querySelectorAll('.category-tabs .tab').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
         currentType = tab.dataset.type;
-        loadDaily(1);
+        loadToday();
       });
     });
 
     Utils.initNav();
-    loadDaily();
+    loadToday();
   </script>
 </body>
 </html>
