@@ -23,16 +23,14 @@
 
   <!-- 主内容 -->
   <main class="main-content">
-    <div class="container">
-      <div id="articleContent">
-        <div class="loading"><div class="spinner"></div><p>加载中...</p></div>
-      </div>
+    <div id="articleContent">
+      <div class="loading"><div class="spinner"></div><p>加载中...</p></div>
     </div>
   </main>
 
   <!-- 页脚 -->
   <footer class="footer">
-    <p>© 2026 交易笔记 - 记录每一笔交易</p>
+    <span>© 2026 交易笔记 - 记录每一笔交易</span>
   </footer>
 
   <script src="https://unpkg.com/@supabase/supabase-js@1"></script>
@@ -55,14 +53,13 @@
           <article class="article-detail">
             <h1>${post.title}</h1>
             <div class="meta">
-              <span>${categoryMap[post.category] || post.category}</span>
-              <span> · </span>
+              <span class="tag">${categoryMap[post.category] || post.category}</span>
               <span>${Articles.formatDate(post.created_at)}</span>
             </div>
-            ${post.cover_url ? `<img src="${post.cover_url}" style="width:100%;border-radius:8px;margin-bottom:24px;" alt="${post.title}">` : ''}
+            ${post.cover_url ? `<img src="${post.cover_url}" class="cover-img" alt="${post.title}">` : ''}
             <div class="content">${post.content}</div>
           </article>
-          <div style="text-align:center;margin-top:30px;">
+          <div style="text-align:center;margin-top:48px;">
             <a href="javascript:history.back()" class="btn btn-outline">← 返回</a>
           </div>
         `;

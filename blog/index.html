@@ -7,6 +7,19 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <!-- 全页滚动文字背景 -->
+  <div class="page-pattern" aria-hidden="true">
+    <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
+    <div class="pattern-row"><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span></div>
+    <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
+    <div class="pattern-row"><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span></div>
+    <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
+    <div class="pattern-row"><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span></div>
+    <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
+    <div class="pattern-row"><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span></div>
+    <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
+  </div>
+
   <!-- 导航栏 -->
   <nav class="navbar">
     <div class="container">
@@ -21,35 +34,40 @@
     </div>
   </nav>
 
-  <!-- 主内容 -->
-  <main class="main-content">
-    <div class="container">
-      <div class="page-header">
-        <h1>最新文章</h1>
-        <p>分享交易心得、市场分析和操作记录</p>
-      </div>
+  <!-- Hero 区 -->
+  <section class="hero">
+    <h1 class="hero-title">HELLO</h1>
+    <p class="hero-subtitle">分享交易心得、市场分析和操作记录，记录每一笔交易的思考与成长</p>
+  </section>
 
-      <!-- 分类筛选 -->
-      <div class="category-tabs">
-        <span class="tab active" data-category="">全部</span>
-        <span class="tab" data-category="article">文章</span>
-        <span class="tab" data-category="daily">盘解</span>
-        <span class="tab" data-category="operation">操作记录</span>
-      </div>
+  <!-- Showcase 精选卡片 -->
+  <div class="container">
+    <div class="showcase" id="showcase"></div>
 
-      <!-- 文章列表 -->
-      <div class="post-grid" id="postList">
-        <div class="loading"><div class="spinner"></div><p>加载中...</p></div>
-      </div>
-
-      <!-- 分页 -->
-      <div class="pagination" id="pagination"></div>
+    <!-- 文章列表 -->
+    <div class="headerRow">
+      <div class="headerTitle"><h2>最新文章</h2></div>
+      <div class="headerDesc"><p>分享交易心得、市场分析和操作记录</p></div>
     </div>
-  </main>
+
+    <!-- 分类筛选 -->
+    <div class="category-tabs">
+      <span class="tab active" data-category="">全部</span>
+      <span class="tab" data-category="article">文章</span>
+      <span class="tab" data-category="daily">盘解</span>
+      <span class="tab" data-category="operation">操作记录</span>
+    </div>
+
+    <div class="blogList" id="postList">
+      <div class="loading"><div class="spinner"></div><p>加载中...</p></div>
+    </div>
+
+    <div class="pagination" id="pagination"></div>
+  </div>
 
   <!-- 页脚 -->
   <footer class="footer">
-    <p>© 2026 交易笔记 - 记录每一笔交易</p>
+    <span>© 2026 交易笔记 - 记录每一笔交易</span>
   </footer>
 
   <script src="https://unpkg.com/@supabase/supabase-js@1"></script>
@@ -60,7 +78,38 @@
     let currentPage = 1;
     let currentCategory = '';
 
-    // 加载文章列表
+    function getCategoryLabel(category) {
+      const map = { article: '文章', daily: '盘解', operation: '操作记录' };
+      return map[category] || category;
+    }
+
+    // 加载 Showcase 精选卡片（有封面的最新 3 篇）
+    async function loadShowcase() {
+      const container = document.getElementById('showcase');
+      try {
+        const { data } = await Articles.getList({ pageSize: 20 });
+        if (!data) return;
+        const withCover = data.filter(p => p.cover_url).slice(0, 3);
+        if (withCover.length === 0) {
+          container.style.display = 'none';
+          return;
+        }
+        container.innerHTML = withCover.map(post => `
+          <a href="article.html?id=${post.id}" class="showcaseCard">
+            <img src="${post.cover_url}" alt="${post.title}">
+            <div class="overlay"></div>
+            <div class="cardInfo">
+              <h3>${post.title}</h3>
+              <p>${Articles.getExcerpt(post.content, 80)}</p>
+            </div>
+          </a>
+        `).join('');
+      } catch (err) {
+        container.style.display = 'none';
+      }
+    }
+
+    // 加载文章列表（行式）
     async function loadPosts(page = 1) {
       const container = document.getElementById('postList');
       container.innerHTML = '<div class="loading"><div class="spinner"></div><p>加载中...</p></div>';
@@ -69,7 +118,7 @@
         const { data, total } = await Articles.getList({
           category: currentCategory || null,
           page,
-          pageSize: 9
+          pageSize: 10
         });
 
         if (!data || data.length === 0) {
@@ -78,17 +127,19 @@
           return;
         }
 
-        container.innerHTML = data.map(post => `
-          <a href="article.html?id=${post.id}" class="card" style="text-decoration:none;color:inherit;">
-            ${post.cover_url ? `<img src="${post.cover_url}" class="card-img" alt="${post.title}">` : '<div class="card-img" style="background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;color:#fff;font-size:40px;">📊</div>'}
-            <div class="card-body">
+        const startIndex = (page - 1) * 10;
+        container.innerHTML = data.map((post, i) => `
+          <a href="article.html?id=${post.id}" class="blogRow">
+            <div class="blogIndex"><span>${String(startIndex + i + 1).padStart(2, '0')}</span></div>
+            <div class="blogInfo">
               <h3>${post.title}</h3>
               <p>${Articles.getExcerpt(post.content)}</p>
-              <div class="card-meta">
+              <div class="rowMeta">
                 <span class="tag">${getCategoryLabel(post.category)}</span>
                 <span>${Articles.formatDate(post.created_at)}</span>
               </div>
             </div>
+            <div class="blogArrow"><span>→</span></div>
           </a>
         `).join('');
 
@@ -96,18 +147,13 @@
         Utils.renderPagination(document.getElementById('pagination'), {
           total,
           page,
-          pageSize: 9,
+          pageSize: 10,
           onChange: loadPosts
         });
       } catch (err) {
         container.innerHTML = '<div class="empty-state"><p>加载失败，请刷新重试</p></div>';
         console.error(err);
       }
-    }
-
-    function getCategoryLabel(category) {
-      const map = { article: '文章', daily: '盘解', operation: '操作记录' };
-      return map[category] || category;
     }
 
     // 分类切换
@@ -122,6 +168,7 @@
 
     // 初始化
     Utils.initNav();
+    loadShowcase();
     loadPosts();
   </script>
 </body>

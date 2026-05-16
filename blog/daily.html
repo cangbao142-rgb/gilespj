@@ -7,6 +7,19 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <!-- 全页滚动文字背景 -->
+  <div class="page-pattern" aria-hidden="true">
+    <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
+    <div class="pattern-row"><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span></div>
+    <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
+    <div class="pattern-row"><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span></div>
+    <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
+    <div class="pattern-row"><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span></div>
+    <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
+    <div class="pattern-row"><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span><span class="pattern-text">顺 势 而 为</span></div>
+    <div class="pattern-row"><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span><span class="pattern-text">知 行 合 一</span></div>
+  </div>
+
   <!-- 导航栏 -->
   <nav class="navbar">
     <div class="container">
@@ -24,9 +37,9 @@
   <!-- 主内容 -->
   <main class="main-content">
     <div class="container">
-      <div class="page-header">
-        <h1>每日盘解</h1>
-        <p>每日市场分析与操作记录</p>
+      <div class="headerRow">
+        <div class="headerTitle"><h2>每日盘解</h2></div>
+        <div class="headerDesc"><p>每日市场分析与操作记录</p></div>
       </div>
 
       <!-- 切换 -->
@@ -36,7 +49,7 @@
       </div>
 
       <!-- 列表 -->
-      <div id="dailyList">
+      <div class="blogList" id="dailyList">
         <div class="loading"><div class="spinner"></div><p>加载中...</p></div>
       </div>
 
@@ -47,7 +60,7 @@
 
   <!-- 页脚 -->
   <footer class="footer">
-    <p>© 2026 交易笔记 - 记录每一笔交易</p>
+    <span>© 2026 交易笔记 - 记录每一笔交易</span>
   </footer>
 
   <script src="https://unpkg.com/@supabase/supabase-js@1"></script>
@@ -75,11 +88,18 @@
           return;
         }
 
-        container.innerHTML = data.map(post => `
-          <a href="article.html?id=${post.id}" class="daily-item" style="text-decoration:none;color:inherit;">
-            <div class="date">${Articles.formatDate(post.created_at)}</div>
-            <h3>${post.title}</h3>
-            <div class="summary">${Articles.getExcerpt(post.content, 150)}</div>
+        const startIndex = (page - 1) * 15;
+        container.innerHTML = data.map((post, i) => `
+          <a href="article.html?id=${post.id}" class="blogRow">
+            <div class="blogIndex"><span>${String(startIndex + i + 1).padStart(2, '0')}</span></div>
+            <div class="blogInfo">
+              <h3>${post.title}</h3>
+              <p>${Articles.getExcerpt(post.content, 150)}</p>
+              <div class="rowMeta">
+                <span>${Articles.formatDate(post.created_at)}</span>
+              </div>
+            </div>
+            <div class="blogArrow"><span>→</span></div>
           </a>
         `).join('');
 
