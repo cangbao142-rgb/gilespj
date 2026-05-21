@@ -6,6 +6,7 @@ const Articles = {
     let query = supabase
       .from('articles')
       .select('*', { count: 'exact' })
+      .order('is_pinned', { ascending: false })
       .order('created_at', { ascending: false });
 
     if (category) {
@@ -33,10 +34,10 @@ const Articles = {
   },
 
   // 创建文章
-  async create({ title, content, cover_url, category }) {
+  async create({ title, content, cover_url, category, is_pinned = false }) {
     const { data, error } = await supabase
       .from('articles')
-      .insert([{ title, content, cover_url, category }])
+      .insert([{ title, content, cover_url, category, is_pinned }])
       .select()
       .single();
     if (error) throw error;
@@ -44,10 +45,10 @@ const Articles = {
   },
 
   // 更新文章
-  async update(id, { title, content, cover_url, category }) {
+  async update(id, { title, content, cover_url, category, is_pinned }) {
     const { data, error } = await supabase
       .from('articles')
-      .update({ title, content, cover_url, category, updated_at: new Date().toISOString() })
+      .update({ title, content, cover_url, category, is_pinned, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select()
       .single();

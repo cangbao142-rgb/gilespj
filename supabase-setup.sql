@@ -12,18 +12,22 @@ CREATE TABLE IF NOT EXISTS articles (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 2. 创建索引
+-- 2. 添加置顶字段（如已有表，执行此 ALTER）
+ALTER TABLE articles ADD COLUMN IF NOT EXISTS is_pinned BOOLEAN DEFAULT false;
+
+-- 3. 创建索引
 CREATE INDEX IF NOT EXISTS idx_articles_category ON articles(category);
 CREATE INDEX IF NOT EXISTS idx_articles_created_at ON articles(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_articles_is_pinned ON articles(is_pinned DESC);
 
--- 3. 启用 RLS (Row Level Security)
+-- 4. 启用 RLS (Row Level Security)
 ALTER TABLE articles ENABLE ROW LEVEL SECURITY;
 
--- 4. 创建策略：所有人可以读取
+-- 5. 创建策略：所有人可以读取
 CREATE POLICY "Anyone can read articles" ON articles
   FOR SELECT USING (true);
 
--- 5. 创建策略：只有登录用户可以增删改
+-- 6. 创建策略：只有登录用户可以增删改
 CREATE POLICY "Authenticated users can insert" ON articles
   FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
@@ -33,19 +37,19 @@ CREATE POLICY "Authenticated users can update" ON articles
 CREATE POLICY "Authenticated users can delete" ON articles
   FOR DELETE USING (auth.role() = 'authenticated');
 
--- 6. 创建存储桶（用于上传图片）
+-- 7. 创建存储桶（用于上传图片）
 INSERT INTO storage.buckets (id, name, public)
 VALUES ('blog-images', 'blog-images', true)
 ON CONFLICT (id) DO NOTHING;
 
--- 7. 存储策略：所有人可以查看图片
+-- 8. 存储策略：所有人可以查看图片
 CREATE POLICY "Anyone can view images" ON storage.objects
   FOR SELECT USING (bucket_id = 'blog-images');
 
--- 8. 存储策略：登录用户可以上传图片
+-- 9. 存储策略：登录用户可以上传图片
 CREATE POLICY "Authenticated users can upload images" ON storage.objects
   FOR INSERT WITH CHECK (bucket_id = 'blog-images' AND auth.role() = 'authenticated');
 
--- 9. 存储策略：登录用户可以删除图片
+-- 10. 存储策略：登录用户可以删除图片
 CREATE POLICY "Authenticated users can delete images" ON storage.objects
   FOR DELETE USING (bucket_id = 'blog-images' AND auth.role() = 'authenticated');

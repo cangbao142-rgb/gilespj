@@ -151,10 +151,10 @@
 
         const startIndex = (page - 1) * 10;
         container.innerHTML = data.map((post, i) => `
-          <a href="article.html?id=${post.id}" class="blogRow">
+          <a href="article.html?id=${post.id}" class="blogRow ${post.is_pinned ? 'pinned' : ''}">
             <div class="blogIndex"><span>${String(startIndex + i + 1).padStart(2, '0')}</span></div>
             <div class="blogInfo">
-              <h3>${post.title}</h3>
+              <h3>${post.is_pinned ? '<span class="pin-badge">置顶</span>' : ''}${post.title}</h3>
               <p>${Articles.getExcerpt(post.content)}</p>
               <div class="rowMeta">
                 <span class="tag">${getCategoryLabel(post.category)}</span>
