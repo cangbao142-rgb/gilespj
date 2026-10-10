@@ -1337,6 +1337,77 @@ html:has(.chart-page-lock) .theme-toggle { display: none; }
   margin: 0 4px;
 }
 
+/* K线图容器 */
+#kline-chart {
+  width: 100%;
+  height: 100%;
+}
+
+/* 币种输入框（可从下拉选，也可手动输入） */
+.ctrl-bar input {
+  color: var(--text);
+  background: #fff;
+  border: 1px solid var(--border);
+  padding: 7px 12px;
+  border-radius: 9px;
+  font-size: 12px;
+  outline: none;
+  transition: all 0.25s;
+  width: 170px;
+}
+
+.ctrl-bar input:hover {
+  border-color: rgba(184, 58, 45, 0.3);
+}
+
+.ctrl-bar input:focus {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 2px rgba(220, 201, 169, 0.12);
+}
+
+/* 画图工具栏 */
+.draw-tools {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.draw-tools .tb {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  cursor: pointer;
+  color: var(--text-3);
+  background: #fff;
+  border: 1px solid var(--border);
+  transition: all 0.25s;
+}
+
+.draw-tools .tb:hover {
+  color: var(--text);
+  border-color: rgba(0, 149, 255, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.draw-tools .tb.on {
+  background: rgba(0, 149, 255, 0.08);
+  color: var(--primary);
+  border-color: rgba(0, 149, 255, 0.25);
+}
+
+.draw-tools .tb:active {
+  transform: translateY(0);
+}
+
+.draw-tools .tb svg {
+  width: 16px;
+  height: 16px;
+}
+
 @media (max-width: 768px) {
   .chart-wrapper { padding: 0 12px; }
   .chart-area { aspect-ratio: auto; height: 400px; }

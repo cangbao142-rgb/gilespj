@@ -14,9 +14,15 @@ export function MusicPlayer() {
     audio.volume = 0.3;
     audio.loop = true;
 
-    const onEnded = () => setPlaying(false);
-    audio.addEventListener("ended", onEnded);
-    return () => audio.removeEventListener("ended", onEnded);
+    // 状态跟随播放器真实事件，加载中/连点都不会失真
+    const onPlay = () => setPlaying(true);
+    const onPause = () => setPlaying(false);
+    audio.addEventListener("play", onPlay);
+    audio.addEventListener("pause", onPause);
+    return () => {
+      audio.removeEventListener("play", onPlay);
+      audio.removeEventListener("pause", onPause);
+    };
   }, []);
 
   // 浏览器要求先有用户操作才能出声：首次点击/按键后自动开始播放
@@ -24,10 +30,13 @@ export function MusicPlayer() {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const start = () => {
-      audio.play().then(() => setPlaying(true)).catch(() => {});
+    const start = (e: Event) => {
+      // 无论是否触发播放，监听只生效一次
       document.removeEventListener("click", start);
       document.removeEventListener("keydown", start);
+      // 音乐按钮自己的点击交给 toggle 处理，避免双重触发
+      if (e.target instanceof Element && e.target.closest(".music-player-btn")) return;
+      audio.play().catch(() => {});
     };
     document.addEventListener("click", start);
     document.addEventListener("keydown", start);
@@ -40,11 +49,11 @@ export function MusicPlayer() {
   const toggle = () => {
     const audio = audioRef.current;
     if (!audio) return;
-    if (playing) {
-      audio.pause();
-      setPlaying(false);
+    // 以元素真实状态为准：加载中点击也能立刻暂停
+    if (audio.paused) {
+      audio.play().catch(() => {});
     } else {
-      audio.play().then(() => setPlaying(true)).catch(() => {});
+      audio.pause();
     }
   };
 

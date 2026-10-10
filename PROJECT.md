@@ -258,15 +258,17 @@ vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY production --type config
 
 ## 部署信息
 
-**Vercel 项目：**
-- 项目名：gilesbk-blog
-- 临时域名：https://gilesbk-blog.vercel.app
-- 自定义域名：待绑定 gilesbk.icu
+**正式站（GitHub 自动部署）：**
+- 仓库：github.com/cangbao142-rgb/gilespj（推送 main 即自动部署）
+- Vercel 项目：blog（框架已设为 Next.js，含 Supabase 环境变量）
+- 域名：https://gilesbk.icu ✅ 新版已上线（2026-10-11）
 
-**绑定域名步骤：**
-1. Vercel Dashboard → 旧项目 → Settings → Domains → 移除 gilesbk.icu
-2. 新项目 → Settings → Domains → 添加 gilesbk.icu
-3. DNS CNAME 指向 cname.vercel-dns.com
+**备用项目：** gilesbk-blog → https://gilesbk-blog.vercel.app（早期预览用，可随时删除）
+
+**旧版管理后台（保留自旧静态站）：**
+- 入口：https://gilesbk.icu/admin/login（邮箱密码登录，Supabase Auth）
+- 文件：public/admin/*.html + public/js/ + public/css/style.css
+- next.config.ts 有 /admin/* 无扩展名重写
 
 ---
 
