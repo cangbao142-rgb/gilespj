@@ -1,6 +1,6 @@
 # Giles博客 - 项目文档
 
-> 最后更新：2026-10-16 · 线上地址：https://gilesbk.icu
+> 最后更新：2026-10-17 · 线上地址：https://gilesbk.icu
 
 ## 项目简介
 
@@ -79,6 +79,7 @@ gilesbk-blog/
 │   │   ├── icon.svg              # 网站图标（品牌 G，浏览器标签显示）
 │   │   │
 │   │   ├── article/[id]/page.tsx # 文章详情（SSR + OG 元数据 + 图片懒加载）
+│   │   ├── teaching/page.tsx     # 教学频道（SSR）
 │   │   ├── daily/page.tsx        # 今日盘解（SSR）
 │   │   ├── chart/
 │   │   │   ├── layout.tsx        # 看盘页浅色锁定（暗色模式不进入此页）
@@ -123,9 +124,10 @@ gilesbk-blog/
 
 | 路径 | 页面 | 渲染 | 说明 |
 |------|------|------|------|
-| `/` | 首页 | SSR | Showcase 精选 + 文章列表 + 分类筛选 |
+| `/` | 首页 | SSR | Showcase 精选 + 内容列表 + 分类筛选 |
 | `/article/[id]` | 文章详情 | SSR | 正文 + OG 元数据 + 点赞 + 评论 |
-| `/daily` | 今日盘解 | SSR | 当天盘解/操作记录 |
+| `/teaching` | 教学 | SSR | 教学内容频道页 |
+| `/daily` | 今日盘解 | SSR | 当天盘解 |
 | `/chart` | 实时看盘 | 客户端 | ECharts K线 + 画图工具（浅色锁定） |
 | `/about` | 关于我 | SSR | 介绍 + 统计 + 后台入口 |
 | `/api/articles` | 文章接口 | 服务端 | ?category=&page=&pageSize= |
@@ -139,8 +141,10 @@ gilesbk-blog/
 
 ## 功能说明
 
-### 文章 / 盘解
-- 分类：article（文章）/ daily（盘解）/ operation（操作记录）
+### 文章 / 盘解 / 教学
+- 分类：article（文章）/ daily（盘解）/ teaching（教学）；**operation（操作记录）已于 2026-10-17 移除**（全站不再出现）
+- 首页 tab：全部 / 文章 / 盘解 / 教学；教学另有独立频道页 `/teaching`（导航栏「教学」入口）
+- 站点文案（2026-10-17 定稿）：首页描述「分享经济解读、市场分析和教学内容」；关于我统计标签 经济解读/市场分析/教学分享；教学页「交易教学内容，从基础到进阶，从K线到宏观」
 - 支持置顶（is_pinned）；首页 Showcase 取有封面的前 3 篇
 - 文章详情自动生成 OG 分享元数据（标题/摘要/封面/时间），正文图片懒加载
 
@@ -198,7 +202,7 @@ const MUSIC_URL = "/music/bgm.mp3";   // 改成新文件路径或 https:// 外�
 ### 管理后台（旧版保留）
 - 入口：https://gilesbk.icu/admin/login （关于页也有链接）
 - 邮箱 + 密码登录（Supabase Auth）；账号在 Supabase Dashboard → Authentication → Users 中创建
-- 可发布/编辑/置顶文章（dashboard.html / post.html），数据写入 articles 表
+- 可发布/编辑/置顶文章（dashboard.html / post.html），数据写入 articles 表；支持三类内容：文章/盘解/教学（`post.html?category=teaching` 发布教学）
 - 仪表盘「最近发布」列表支持翻页（每页 10 条，`Utils.renderPagination`），删除后停留在当前页
 - 文件是纯静态 HTML（public/admin + public/js + public/css），与 Next.js 页面互不干扰
 
@@ -218,7 +222,7 @@ URL:  https://ljyktooeikwjdhwcxazm.supabase.co
 | title | text | 标题 |
 | content | text | HTML 内容 |
 | cover_url | text | 封面图 URL |
-| category | text | article / daily / operation |
+| category | text | article / daily / teaching |
 | is_pinned | boolean | 是否置顶 |
 | created_at / updated_at | timestamp | 时间戳 |
 

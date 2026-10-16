@@ -96,15 +96,15 @@ const Articles = {
       .select('*', { count: 'exact', head: true })
       .eq('category', 'daily');
 
-    const { count: totalOperation } = await supabase
+    const { count: totalTeaching } = await supabase
       .from('articles')
       .select('*', { count: 'exact', head: true })
-      .eq('category', 'operation');
+      .eq('category', 'teaching');
 
     return {
       articles: totalArticles || 0,
       daily: totalDaily || 0,
-      operations: totalOperation || 0
+      teaching: totalTeaching || 0
     };
   },
 

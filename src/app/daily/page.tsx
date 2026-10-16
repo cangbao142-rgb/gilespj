@@ -6,14 +6,13 @@ import { DailyTabs } from "@/components/DailyTabs";
 
 export const metadata: Metadata = {
   title: "今日盘解",
-  description: "今日市场分析与操作记录",
+  description: "今日市场分析",
 };
 
 export const dynamic = "force-dynamic";
 
 export default async function DailyPage() {
   const dailyArticles = await getTodayArticles("daily");
-  const operationArticles = await getTodayArticles("operation");
 
   const dateStr = new Date().toLocaleDateString("zh-CN", {
     timeZone: "Asia/Shanghai",
@@ -26,15 +25,11 @@ export default async function DailyPage() {
           <h2>今日盘解</h2>
         </div>
         <div className="headerDesc">
-          <p>今日市场分析与操作记录</p>
+          <p>今日市场分析</p>
         </div>
       </div>
 
-      <DailyTabs
-        dailyArticles={dailyArticles}
-        operationArticles={operationArticles}
-        dateStr={dateStr}
-      />
+      <DailyTabs articles={dailyArticles} dateStr={dateStr} />
     </div>
   );
 }

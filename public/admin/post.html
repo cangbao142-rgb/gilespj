@@ -14,7 +14,7 @@
       <a href="dashboard.html" class="nav-item">📊 仪表盘</a>
       <a href="post.html" class="nav-item active">✏️ 发布文章</a>
       <a href="post.html?category=daily" class="nav-item">📈 发布盘解</a>
-      <a href="post.html?category=operation" class="nav-item">📋 发布操作记录</a>
+      <a href="post.html?category=teaching" class="nav-item">📚 发布教学</a>
       <a href="/" class="nav-item" target="_blank">🌐 查看网站</a>
       <a href="#" class="nav-item" id="logoutBtn">🚪 退出登录</a>
     </aside>
@@ -38,7 +38,7 @@
             <select id="category">
               <option value="article">文章</option>
               <option value="daily">盘解</option>
-              <option value="operation">操作记录</option>
+              <option value="teaching">教学</option>
             </select>
           </div>
 
@@ -118,7 +118,7 @@
     }
 
     function updateTitle(category) {
-      const map = { article: '发布文章', daily: '发布盘解', operation: '发布操作记录' };
+      const map = { article: '发布文章', daily: '发布盘解', teaching: '发布教学' };
       document.getElementById('pageTitle').textContent = map[category] || '发布内容';
     }
 

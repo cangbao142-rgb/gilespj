@@ -9,9 +9,10 @@ interface PostListProps {
   initialData: Article[];
   initialTotal: number;
   pageSize?: number;
+  category?: CategoryType | "";
 }
 
-export function PostList({ initialData, initialTotal, pageSize = 10 }: PostListProps) {
+export function PostList({ initialData, initialTotal, pageSize = 10, category = "" }: PostListProps) {
   const [posts, setPosts] = useState<Article[]>(initialData);
   const [total, setTotal] = useState(initialTotal);
   const [page, setPage] = useState(1);
@@ -20,7 +21,12 @@ export function PostList({ initialData, initialTotal, pageSize = 10 }: PostListP
   const loadPage = useCallback(async (p: number) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/articles?page=${p}&pageSize=${pageSize}`);
+      const params = new URLSearchParams();
+      if (category) params.set("category", category);
+      params.set("page", String(p));
+      params.set("pageSize", String(pageSize));
+
+      const res = await fetch(`/api/articles?${params}`);
       const data = await res.json();
       setPosts(data.data);
       setTotal(data.total);
@@ -30,7 +36,7 @@ export function PostList({ initialData, initialTotal, pageSize = 10 }: PostListP
     } finally {
       setLoading(false);
     }
-  }, [pageSize]);
+  }, [pageSize, category]);
 
   const totalPages = Math.ceil(total / pageSize);
 

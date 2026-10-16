@@ -22,11 +22,11 @@ export default async function AboutPage() {
           <div className="about-accent" />
         </div>
         <div className="about-body">
-          <p>你好，欢迎来到我的博客。</p>
+          <p>你好，欢迎来到Giles的博客</p>
           <p>
-            这里记录了我的每日市场盘解、交易操作记录和一些交易心得文章。
+            这里记录了我的市场分析、经济解读和一些教学内容
           </p>
-          <p>本博客仅供个人记录和学习交流，不构成任何投资建议。</p>
+          <p>本博客所有内容均为个人观点分享，不构成任何投资建议，据此操作风险自负</p>
           <h3>联系方式</h3>
           <p>如果你有任何问题或想交流，可以通过以下方式联系我：</p>
           <ul>
@@ -48,15 +48,15 @@ export default async function AboutPage() {
       <div className="about-stats">
         <div className="about-stat-item">
           <span className="about-stat-num">{stats.articles}+</span>
-          <span className="about-stat-label">交易经验</span>
+          <span className="about-stat-label">经济解读</span>
         </div>
         <div className="about-stat-item">
           <span className="about-stat-num">{stats.daily}+</span>
-          <span className="about-stat-label">盘解记录</span>
+          <span className="about-stat-label">市场分析</span>
         </div>
         <div className="about-stat-item">
-          <span className="about-stat-num">{stats.operations}+</span>
-          <span className="about-stat-label">操作复盘</span>
+          <span className="about-stat-num">{stats.teaching}+</span>
+          <span className="about-stat-label">教学分享</span>
         </div>
       </div>
 

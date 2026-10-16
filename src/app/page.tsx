@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Giles博客 - 首页",
-  description: "分享交易心得、市场分析和操作记录",
+  description: "分享经济解读、市场分析和教学内容",
 };
 
 export const dynamic = "force-dynamic"; // SSR: 每次请求都从 Supabase 获取
@@ -26,10 +26,10 @@ export default async function HomePage() {
       {/* 文章列表 */}
       <div className="headerRow">
         <div className="headerTitle">
-          <h2>最新文章</h2>
+          <h2>最新内容</h2>
         </div>
         <div className="headerDesc">
-          <p>分享交易心得、市场分析和操作记录</p>
+          <p>分享经济解读、市场分析和教学内容</p>
         </div>
       </div>
 

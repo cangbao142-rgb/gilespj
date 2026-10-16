@@ -13,7 +13,7 @@ const TABS: { key: CategoryType | ""; label: string }[] = [
   { key: "", label: "全部" },
   { key: "article", label: "文章" },
   { key: "daily", label: "盘解" },
-  { key: "operation", label: "操作记录" },
+  { key: "teaching", label: "教学" },
 ];
 
 export function CategoryTabs({ initialData, initialTotal }: CategoryTabsProps) {
@@ -62,7 +62,7 @@ export function CategoryTabs({ initialData, initialTotal }: CategoryTabsProps) {
           <p>加载中...</p>
         </div>
       ) : (
-        <PostList initialData={data} initialTotal={total} />
+        <PostList initialData={data} initialTotal={total} category={activeCategory} key={activeCategory} />
       )}
     </>
   );

@@ -14,7 +14,7 @@
       <a href="dashboard.html" class="nav-item active">📊 仪表盘</a>
       <a href="post.html" class="nav-item">✏️ 发布文章</a>
       <a href="post.html?category=daily" class="nav-item">📈 发布盘解</a>
-      <a href="post.html?category=operation" class="nav-item">📋 发布操作记录</a>
+      <a href="post.html?category=teaching" class="nav-item">📚 发布教学</a>
       <a href="/" class="nav-item" target="_blank">🌐 查看网站</a>
       <a href="#" class="nav-item" id="logoutBtn">🚪 退出登录</a>
     </aside>
@@ -37,8 +37,8 @@
           <div class="label">盘解</div>
         </div>
         <div class="stat-card">
-          <div class="number" id="statOperations">0</div>
-          <div class="label">操作记录</div>
+          <div class="number" id="statTeaching">0</div>
+          <div class="label">教学</div>
         </div>
       </div>
 
@@ -69,7 +69,7 @@
   <script src="../js/articles.js"></script>
   <script src="../js/utils.js"></script>
   <script>
-    const categoryMap = { article: '文章', daily: '盘解', operation: '操作记录' };
+    const categoryMap = { article: '文章', daily: '盘解', teaching: '教学' };
     const PAGE_SIZE = 10;
     let currentPage = 1;
 
@@ -78,7 +78,7 @@
         const stats = await Articles.getStats();
         document.getElementById('statArticles').textContent = stats.articles;
         document.getElementById('statDaily').textContent = stats.daily;
-        document.getElementById('statOperations').textContent = stats.operations;
+        document.getElementById('statTeaching').textContent = stats.teaching;
       } catch (err) {
         console.error('统计加载失败:', err);
       }

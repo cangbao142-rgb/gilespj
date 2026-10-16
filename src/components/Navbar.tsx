@@ -6,6 +6,7 @@ import { useState, useLayoutEffect } from "react";
 
 const NAV_ITEMS = [
   { href: "/", label: "首页" },
+  { href: "/teaching", label: "教学" },
   { href: "/daily", label: "今日盘解" },
   { href: "/chart", label: "实时看盘" },
   { href: "/about", label: "关于我" },

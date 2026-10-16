@@ -75,16 +75,16 @@ export async function getTodayArticles(type: CategoryType = 'daily') {
 export async function getStats() {
   const supabase = createServerSupabaseClient()
 
-  const [articlesRes, dailyRes, operationsRes] = await Promise.all([
+  const [articlesRes, dailyRes, teachingRes] = await Promise.all([
     supabase.from('articles').select('*', { count: 'exact', head: true }).eq('category', 'article'),
     supabase.from('articles').select('*', { count: 'exact', head: true }).eq('category', 'daily'),
-    supabase.from('articles').select('*', { count: 'exact', head: true }).eq('category', 'operation'),
+    supabase.from('articles').select('*', { count: 'exact', head: true }).eq('category', 'teaching'),
   ])
 
   return {
     articles: articlesRes.count ?? 0,
     daily: dailyRes.count ?? 0,
-    operations: operationsRes.count ?? 0,
+    teaching: teachingRes.count ?? 0,
   }
 }
 

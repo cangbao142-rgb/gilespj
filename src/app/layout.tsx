@@ -23,8 +23,8 @@ export const metadata: Metadata = {
     default: "Giles博客",
     template: "%s - Giles博客",
   },
-  description: "分享交易心得、市场分析和操作记录",
-  keywords: ["交易", "盘解", "市场分析", "操作记录", "博客"],
+  description: "分享经济解读、市场分析和教学内容",
+  keywords: ["交易", "经济解读", "市场分析", "教学", "博客"],
   authors: [{ name: "Giles" }],
   openGraph: {
     type: "website",
