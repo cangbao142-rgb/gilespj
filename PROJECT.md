@@ -1,6 +1,6 @@
 # Giles博客 - 项目文档
 
-> 最后更新：2026-10-11 · 线上地址：https://gilesbk.icu
+> 最后更新：2026-10-16 · 线上地址：https://gilesbk.icu
 
 ## 项目简介
 
@@ -199,6 +199,7 @@ const MUSIC_URL = "/music/bgm.mp3";   // 改成新文件路径或 https:// 外�
 - 入口：https://gilesbk.icu/admin/login （关于页也有链接）
 - 邮箱 + 密码登录（Supabase Auth）；账号在 Supabase Dashboard → Authentication → Users 中创建
 - 可发布/编辑/置顶文章（dashboard.html / post.html），数据写入 articles 表
+- 仪表盘「最近发布」列表支持翻页（每页 10 条，`Utils.renderPagination`），删除后停留在当前页
 - 文件是纯静态 HTML（public/admin + public/js + public/css），与 Next.js 页面互不干扰
 
 ---
