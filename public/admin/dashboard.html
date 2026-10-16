@@ -59,6 +59,7 @@
           </tbody>
         </table>
       </div>
+      <div class="pagination" id="postsPagination"></div>
     </main>
   </div>
 
@@ -69,15 +70,10 @@
   <script src="../js/utils.js"></script>
   <script>
     const categoryMap = { article: '文章', daily: '盘解', operation: '操作记录' };
+    const PAGE_SIZE = 10;
+    let currentPage = 1;
 
-    async function init() {
-      const ok = await Auth.requireAuth();
-      if (!ok) return;
-
-      const user = await Auth.getUser();
-      document.getElementById('userEmail').textContent = user?.email || '';
-
-      // 加载统计
+    async function loadStats() {
       try {
         const stats = await Articles.getStats();
         document.getElementById('statArticles').textContent = stats.articles;
@@ -86,16 +82,22 @@
       } catch (err) {
         console.error('统计加载失败:', err);
       }
+    }
 
-      // 加载最近内容
+    async function loadPosts(page) {
       try {
-        const { data } = await Articles.getList({ pageSize: 10 });
+        const { data, total } = await Articles.getList({ page, pageSize: PAGE_SIZE });
         const tbody = document.getElementById('recentPosts');
+        const pagination = document.getElementById('postsPagination');
+
         if (!data || data.length === 0) {
+          if (page > 1) return loadPosts(page - 1);
           tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#999;">暂无内容</td></tr>';
+          pagination.innerHTML = '';
           return;
         }
 
+        currentPage = page;
         tbody.innerHTML = data.map(post => `
           <tr>
             <td><a href="post.html?id=${post.id}">${post.title}</a></td>
@@ -107,9 +109,23 @@
             </td>
           </tr>
         `).join('');
+        Utils.renderPagination(pagination, {
+          total, page, pageSize: PAGE_SIZE, onChange: loadPosts
+        });
       } catch (err) {
         console.error('列表加载失败:', err);
       }
+    }
+
+    async function init() {
+      const ok = await Auth.requireAuth();
+      if (!ok) return;
+
+      const user = await Auth.getUser();
+      document.getElementById('userEmail').textContent = user?.email || '';
+
+      await loadStats();
+      await loadPosts(1);
     }
 
     async function deletePost(id) {
@@ -117,7 +133,8 @@
       try {
         await Articles.delete(id);
         Utils.toast('删除成功');
-        init();
+        await loadStats();
+        await loadPosts(currentPage);
       } catch (err) {
         Utils.toast('删除失败: ' + err.message, 'error');
       }
